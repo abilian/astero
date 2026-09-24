@@ -1,0 +1,9 @@
+val pgcd : int -> int -> int
+val bezout : int -> int -> int * int * int
+val inverse : int -> int -> int
+val puissance : int -> int -> int -> int
+val fabrique : int -> int -> int -> clefs
+val code : clefs -> int -> int
+val decode : clefs -> int -> int
+val code_texte : clefs -> string -> int list
+val decode_texte : clefs -> int list -> string

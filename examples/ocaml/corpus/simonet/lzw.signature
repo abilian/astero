@@ -1,0 +1,7 @@
+val initial : int -> dictionnaire
+val ajoute : dictionnaire -> string -> unit
+val code : dictionnaire -> string -> int
+val connu : dictionnaire -> string -> bool
+val comprime : string -> int list
+val decomprime : int list -> string
+val taux : string -> 'a list -> int

@@ -1,0 +1,7 @@
+val hanoi : int -> string -> string -> string -> unit
+val coups : int -> int
+val parties : 'a list -> 'a list list
+val insertions : 'a -> 'a list -> 'a list list
+val permutations : 'a list -> 'a list list
+val gray : int -> int list list
+val factorielle : int -> int

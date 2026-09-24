@@ -1,0 +1,16 @@
+extend = "../../ruff.toml"
+
+# This project's own package, and the library it is built on. Its modules
+# import each other relatively, so they sort as local either way; this is
+# what keeps `astero` in the first-party block.
+src = ["src", "../../src"]
+
+[lint.extend-per-file-ignores]
+"run_c.py" = [
+    # The C target's oracle: it shells out to `cc` and runs what comes back.
+    # Compiling and executing the programme under test is the whole
+    # technique, as `S102` is for the tests that `exec` the Python.
+    "S404", # suspicious-subprocess-import
+    "S603", # subprocess-without-shell-equals-true
+    "S607", # start-process-with-partial-path — `cc` is whichever is on PATH
+]

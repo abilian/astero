@@ -1,0 +1,7 @@
+val origin : position
+val translate : float -> float -> transform
+val norm2 : point -> float
+val touch : 'a cell -> 'a
+val store : 'a cell -> 'a -> unit
+val describe : point -> float * float
+val is_origin : point -> bool

@@ -1,0 +1,6 @@
+Usage: automaton <string> <even|float>
+Word 0110 is accepted by the automaton.
+Word 0111 is rejected by the automaton.
+Word 3.14 is accepted by the automaton.
+Word 3. is rejected by the automaton.
+Word 12 is accepted by the automaton.

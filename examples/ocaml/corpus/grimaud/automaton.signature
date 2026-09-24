@@ -1,0 +1,26 @@
+val eps : char
+val empty_automaton : automaton
+val check_automaton : automaton -> bool
+val print_symbol : char -> unit
+val print_symbol_list : char list -> unit
+val print_int_list : int list -> unit
+val print_transitions : (int * char * int) list -> unit
+val print_automaton : automaton -> unit
+val add_state : automaton -> int -> automaton
+val add_final_state : automaton -> int -> automaton
+val add_transition : automaton -> int * symbol * int -> automaton
+val remove_transition : automaton -> int * symbol * int -> automaton
+val is_deterministic : automaton -> bool
+val complete : automaton -> automaton
+val accessible_states : automaton -> int list
+val coaccessible_states : automaton -> int list
+val prune : automaton -> automaton
+val remove_epsilon_transitions : automaton -> automaton
+val find_output_symbols : automaton -> int list -> symbol list
+val find_output_states_for_symbol : automaton -> int list -> symbol -> int list
+val determinize : automaton -> automaton
+val automaton1 : automaton
+val automaton2 : automaton
+val automaton3 : automaton
+val automaton4 : automaton
+val automaton5 : automaton

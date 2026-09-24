@@ -1,0 +1,8 @@
+val construit : rationnelle -> afn
+val insere : 'a -> 'a list -> 'a list
+val reunion : 'a list -> 'a list -> 'a list
+val fermeture : afn -> int list -> int list
+val avance : afn -> int list -> char -> int list
+val alphabet : afn -> char list
+val determinise : afn -> afd
+val reconnait : afn -> afd -> string -> bool

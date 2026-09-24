@@ -1,0 +1,4 @@
+val fibo : int -> int
+val somme_max : int array -> int
+val plus_longue_commune : string -> string -> int
+val rendu : int list -> int -> int

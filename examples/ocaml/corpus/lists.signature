@@ -1,0 +1,7 @@
+val length : 'a list -> int
+val map : ('a -> 'b) -> 'a list -> 'b list
+val filter : ('a -> bool) -> 'a list -> 'a list
+val classify : int -> string
+val merge : ('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
+val compose : ('a -> 'b) -> ('c -> 'a) -> 'c -> 'b
+val sum : int list -> int

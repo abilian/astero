@@ -1,0 +1,5 @@
+val even : int -> bool
+val odd : int -> bool
+val eval : expr -> int
+val depth : expr -> int
+val flatten : expr -> int list

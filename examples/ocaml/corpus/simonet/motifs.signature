@@ -1,0 +1,6 @@
+val naif : string -> string -> int list
+val bords : string -> int array
+val kmp : string -> string -> int list
+val mauvais_caractere : string -> int array
+val boyer_moore : string -> string -> int list
+val affiche : int list -> unit

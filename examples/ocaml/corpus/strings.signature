@@ -1,0 +1,6 @@
+val upper : string -> string
+val char_at : string -> int -> char
+val count : char -> string -> int
+val reverse : string -> char array
+val words : string -> string list
+val initials : string -> char list

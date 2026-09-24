@@ -1,0 +1,5 @@
+val print_cover : cover -> unit
+val is_vertex_cover : graph -> cover -> bool
+val cover_of_mask : int -> int -> cover
+val exhaustive_vertex_cover : graph -> cover
+val greedy_vertex_cover : graph -> cover

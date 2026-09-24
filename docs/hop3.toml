@@ -1,0 +1,12 @@
+[metadata]
+id = "astero-docs"
+title = "Astero Documentation"
+description = "Official documentation for Astero"
+
+[build]
+toolchain = "static"
+static-dir = "site"
+ignore = ["src"]
+
+[env]
+HOST_NAME = "astero.lab.abilian.com"

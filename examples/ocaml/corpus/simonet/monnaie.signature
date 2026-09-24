@@ -1,0 +1,9 @@
+val est_un_systeme : int list -> bool
+val poids_minimaux : int -> int list -> int array
+val minimal : int -> int list -> int
+val glouton : int -> int list -> int list
+val poids : int list -> int
+val bornes : int list -> int * int
+val contre_exemple : int list -> int
+val est_canonique : int list -> bool
+val affiche : int list -> unit

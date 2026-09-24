@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>caml-prépa</title>
+    <meta
+      name="description"
+      content="Un compilateur pour l'OCaml de prépa, que l'on peut regarder fonctionner. A compiler for the OCaml taught in French classes préparatoires, that you can look inside."
+    />
+    <link rel="alternate" hreflang="fr" href="fr/" />
+    <link rel="alternate" hreflang="en" href="en/" />
+    <link rel="alternate" hreflang="x-default" href="fr/" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page: #fbfaf8;
+        --ink: #1b1a18;
+        --faint: #6d6a63;
+        --line: #ddd8cf;
+        --accent: #bf4d16;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page: #17161a;
+          --ink: #e8e5e0;
+          --faint: #9b968d;
+          --line: #33313a;
+          --accent: #e0a06a;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 2rem;
+        background: var(--page);
+        color: var(--ink);
+        font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+      main { max-width: 34rem; text-align: center; }
+      h1 { margin: 0 0 0.3rem; font-size: 2.1rem; letter-spacing: -0.02em; }
+      .tag { margin: 0 0 2rem; color: var(--faint); }
+      .tag span { display: block; }
+      .choices { display: grid; gap: 0.8rem; grid-template-columns: 1fr 1fr; }
+      @media (max-width: 30rem) { .choices { grid-template-columns: 1fr; } }
+      a.choice {
+        display: block;
+        padding: 1rem 1.2rem;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        text-decoration: none;
+        color: inherit;
+        text-align: left;
+      }
+      a.choice:hover { border-color: var(--accent); }
+      a.choice strong { display: block; font-size: 1.05rem; }
+      a.choice span { color: var(--faint); font-size: 0.9rem; }
+      footer { margin-top: 2rem; color: var(--faint); font-size: 0.85rem; }
+      footer a { color: var(--accent); }
+      noscript p { color: var(--faint); font-size: 0.85rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>caml-prépa</h1>
+      <p class="tag">
+        <span>Un compilateur pour l'OCaml de prépa, que l'on peut regarder fonctionner.</span>
+        <span>A compiler for the OCaml taught in French <em>classes préparatoires</em>.</span>
+      </p>
+
+      <div class="choices">
+        <a class="choice" href="fr/" hreflang="fr" data-lang="fr">
+          <strong>Français</strong>
+          <span>Le langage, le bac à sable, et comment marche un compilateur</span>
+        </a>
+        <a class="choice" href="en/" hreflang="en" data-lang="en">
+          <strong>English</strong>
+          <span>The language, the playground, and how a compiler works</span>
+        </a>
+      </div>
+
+      <footer>
+        <noscript>
+          <p>Choisissez une langue ci-dessus. / Pick a language above.</p>
+        </noscript>
+        <p><a href="https://github.com/abilian/astero">Source</a> · Apache-2.0</p>
+      </footer>
+    </main>
+
+    <script>
+      // Send a reader straight through, and remember what they picked.
+      //
+      // Three sources, in order: a previous choice, then the browser's own
+      // preference list, then French, because that is who this is for. A
+      // reader who wants the other one clicks, and the click is remembered,
+      // so the redirect never traps anybody.
+      (function () {
+        var LANGS = ["fr", "en"];
+        var KEY = "caml-prepa:lang";
+
+        function stored() {
+          try {
+            var found = localStorage.getItem(KEY);
+            return LANGS.indexOf(found) >= 0 ? found : null;
+          } catch (e) {
+            return null;
+          }
+        }
+
+        function preferred() {
+          var wanted = navigator.languages || [navigator.language || ""];
+          for (var i = 0; i < wanted.length; i++) {
+            var head = String(wanted[i]).toLowerCase().split("-")[0];
+            if (LANGS.indexOf(head) >= 0) return head;
+          }
+          return null;
+        }
+
+        Array.prototype.forEach.call(
+          document.querySelectorAll("a.choice"),
+          function (link) {
+            link.addEventListener("click", function () {
+              try {
+                localStorage.setItem(KEY, link.dataset.lang);
+              } catch (e) {
+                /* a browser that refuses storage still follows the link */
+              }
+            });
+          }
+        );
+
+        // `#stay` opts out, so this page can be read on purpose.
+        if (location.hash === "#stay") return;
+        var going = stored() || preferred() || "fr";
+        location.replace(going + "/");
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+val taille : 'a arbre -> int
+val hauteur : 'a arbre -> int
+val maximum : 'a arbre -> 'a
+val infixe : 'a arbre -> 'a list
+val est_abr : 'a arbre -> bool
+val appartient : 'a -> 'a arbre -> bool
+val insere : 'a -> 'a arbre -> 'a arbre
+val minimum : 'a arbre -> 'a
+val supprime : 'a -> 'a arbre -> 'a arbre
+val de_liste : 'a list -> 'a arbre
+val associe : 'a -> ('a, 'b) table -> 'b
+val ajoute : 'a -> 'b -> ('a, 'b) table -> ('a, 'b) table
+val affiche : int list -> unit

@@ -1,0 +1,11 @@
+val hache_entier : int -> int -> int
+val hache_chaine : int -> string -> int
+val cree : ('a -> int) -> int -> ('a, 'b) table
+val ajoute : ('a, 'b) table -> 'a -> 'b -> unit
+val trouve : ('a, 'b) table -> 'a -> 'b
+val supprime : ('a, 'b) table -> 'a -> unit
+val pire : ('a, 'b) table -> int
+val cree_dyn : (int -> 'a -> int) -> int -> ('a, 'b) dyntable
+val agrandit : ('a, 'b) dyntable -> unit
+val ajoute_dyn : ('a, 'b) dyntable -> 'a -> 'b -> unit
+val trouve_dyn : ('a, 'b) dyntable -> 'a -> 'b

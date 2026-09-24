@@ -1,0 +1,12 @@
+val affiche_case : int -> unit
+val affiche : int array array -> unit
+val cree_pile : int -> pile
+val est_vide : pile -> bool
+val empile : pile -> int -> unit
+val depile : pile -> int
+val sommet : pile -> int
+val voisines : int array array -> int -> int list
+val sortie : int array array -> int -> int -> int list
+val graine : int ref
+val tire : int -> int
+val engendre : int -> int -> int array array

@@ -1,0 +1,6 @@
+val degre : int array -> int
+val evalue : int array -> int -> int
+val somme : int array -> int array -> int array
+val produit : int array -> int array -> int array
+val derive : int array -> int array
+val affiche : int array -> unit

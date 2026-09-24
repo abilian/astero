@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="{{lang}}">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>{{heading}}</h1>
+      <p>{{blurb}}</p>
+      <nav>
+        <a href="../">{{nav_home}}</a>
+        <a href="../language/playground/">{{nav_guide}}</a>
+        <a href="../language/tour/">{{nav_tour}}</a>
+        <a href="../language/reference/">{{nav_reference}}</a>
+        <a class="switch" href="{{switch_href}}" data-lang="{{switch_lang}}"
+          >{{switch_label}}</a
+        >
+      </nav>
+    </header>
+
+    <div class="bar">
+      <label for="example">{{programme}}</label>
+      <select id="example" disabled></select>
+      <button id="run-button" title="{{run_title}}" disabled>{{run}}</button>
+      <button id="share" class="quiet" disabled>{{share}}</button>
+      <span id="status" role="status">{{starting}}</span>
+    </div>
+
+    <main>
+      <section class="pane">
+        <h2>{{source}}</h2>
+        <textarea
+          id="source"
+          spellcheck="false"
+          autocapitalize="off"
+          autocomplete="off"
+          aria-label="{{source}}"
+        ></textarea>
+      </section>
+
+      <section class="pane" id="views">
+        <div class="tabs" role="tablist">
+          <button role="tab" aria-selected="true" data-view="run">{{tab_run}}</button>
+          <button role="tab" aria-selected="false" data-view="types">{{tab_types}}</button>
+          <button role="tab" aria-selected="false" data-view="names">{{tab_names}}</button>
+          <button role="tab" aria-selected="false" data-view="python">{{tab_python}}</button>
+          <button role="tab" aria-selected="false" data-view="printed">{{tab_printed}}</button>
+          <button role="tab" aria-selected="false" data-view="step">{{tab_step}}</button>
+        </div>
+        <p class="hint" data-hint="run">{{hint_run}}</p>
+        <p class="hint" data-hint="types" hidden>{{hint_types}}</p>
+        <p class="hint" data-hint="names" hidden>{{hint_names}}</p>
+        <p class="hint" data-hint="python" hidden>{{hint_python}}</p>
+        <p class="hint" data-hint="printed" hidden>{{hint_printed}}</p>
+        <p class="hint" data-hint="step" hidden>{{hint_step}}</p>
+        <p id="errors" hidden></p>
+        <pre id="run" class="view"></pre>
+        <pre id="types" class="view" hidden></pre>
+        <div id="names" class="view" hidden></div>
+        <pre id="python" class="view" hidden></pre>
+        <pre id="printed" class="view" hidden></pre>
+
+        <div id="step" class="view" hidden>
+          <div class="transport">
+            <button data-step="start" title="{{step_start}}" aria-label="{{step_start}}">&#x23ee;</button>
+            <button data-step="back" title="{{step_back}}">&#x25c0; {{step_back_short}}</button>
+            <button data-step="forward" title="{{step_forward}}">{{step_forward_short}} &#x25b6;</button>
+            <button data-step="end" title="{{step_end}}" aria-label="{{step_end}}">&#x23ed;</button>
+            <button data-step="in" title="{{step_in}}">&#x21b3; {{step_in_short}}</button>
+            <button data-step="out" title="{{step_out}}">&#x21b0; {{step_out_short}}</button>
+            <input id="step-at" type="range" min="0" max="0" value="0"
+                   aria-label="{{step_at}}" />
+            <span id="step-count" class="count"></span>
+            <button id="step-cursor" class="quiet" title="{{step_cursor_title}}">{{step_cursor}}</button>
+          </div>
+          <p id="step-note" hidden></p>
+          <pre id="step-source" class="mirror"></pre>
+          <div id="step-where"></div>
+          <div class="step-grid">
+            <section>
+              <h3>{{step_env}}</h3>
+              <table id="step-env"></table>
+            </section>
+            <section>
+              <h3>{{step_store}}</h3>
+              <table id="step-store"></table>
+            </section>
+          </div>
+          <h3>{{step_python}}</h3>
+          <pre id="step-python" class="mirror"></pre>
+          <h3>{{step_output}}</h3>
+          <pre id="step-output"></pre>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>{{footer}}</p>
+    </footer>
+
+    <script>window.STRINGS = {{strings}};</script>
+    <script src="app.js"></script>
+  </body>
+</html>

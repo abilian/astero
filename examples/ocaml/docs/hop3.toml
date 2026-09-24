@@ -1,0 +1,12 @@
+[metadata]
+id = "caml-prepa-docs"
+title = "Caml-prépa Documentation"
+description = "Official documentation for Caml-prépa"
+
+[build]
+toolchain = "static"
+static-dir = "site"
+ignore = ["src"]
+
+[env]
+HOST_NAME = "caml-prepa.lab.abilian.com"

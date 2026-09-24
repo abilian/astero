@@ -1,0 +1,40 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Scratch checkouts used as reference material, not part of the package
+sandbox
+
+.envrc
+.github/
+.python-version
+
+# the built documentation site
+docs/site/
+
+# Coverage and nox leave these behind; `make test-cov` and `tepyd cover`
+# both write one.
+.coverage
+.coverage.*
+htmlcov/
+.nox/
+
+# Built by `make -C examples web`: the bundle, and the reference page
+# whose tables are generated from the compiler.
+examples/ocaml/web/py/
+# The caml-prépa site: its generated reference card, the playground
+# copied in, and the built site.
+examples/ocaml/docs/*/src/language/reference.md
+examples/ocaml/docs/*/src/play/
+examples/ocaml/docs/site/
+examples/ocaml/web/index.html
+
+# dune finds the corpus's `.ml` files and builds beside them.
+_build/

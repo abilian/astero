@@ -1,0 +1,7 @@
+val pgcd : int -> int -> int
+val ppcm : int -> int -> int
+val puissance : int -> int -> int
+val dichotomie : 'a array -> 'a -> int
+val compte_fusion : 'a list -> 'a list -> int * 'a list
+val coupe : int -> 'a list -> 'a list * 'a list
+val inversions : 'a list -> int * 'a list

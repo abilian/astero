@@ -1,0 +1,13 @@
+> 4+3.7*2.1
+Result : 11.770000
+> -2*(1+pi)
+Result : -8.283185
+> cos(0)+sin(pi/2)
+Result : 2.000000
+> e*e
+Result : 7.389056
+> 3+
+Syntax error: Remaining to process: 
+> 2 $ 3
+Lexical error: Unexpected symbol: $
+> quit

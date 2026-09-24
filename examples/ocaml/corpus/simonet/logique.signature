@@ -1,0 +1,9 @@
+val evalue : expr -> bool array -> bool
+val indice_max : expr -> int
+val incremente : bool array -> unit
+val satisfait : expr -> bool array
+val tautologie : expr -> bool array option
+val affiche : bool array -> unit
+val resout : string -> expr -> unit
+val au_moins_deux : expr list -> expr
+val exactement_un : expr list -> expr

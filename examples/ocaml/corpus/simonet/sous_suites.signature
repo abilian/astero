@@ -1,0 +1,7 @@
+val prefixe : int -> 'a list -> 'a list
+val est_sous_suite : 'a list -> 'a list -> bool
+val longueur_naive : 'a list -> 'a list -> int
+val table : 'a array -> 'a array -> int array array
+val longueur : 'a array -> 'a array -> int
+val temoin : 'a array -> 'a array -> 'a list
+val affiche : int list -> unit

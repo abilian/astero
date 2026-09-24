@@ -1,0 +1,9 @@
+val feuilles : arbre -> char list
+val decode : arbre -> int list -> char list
+val code : arbre -> char -> int list option
+val encode : arbre -> string -> int list
+val frequences : string -> (int * arbre) list
+val insere : 'a * 'b -> ('a * 'b) list -> ('a * 'b) list
+val construit : (int * arbre) list -> arbre
+val huffman : string -> arbre
+val affiche_mot : int list -> unit

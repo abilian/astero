@@ -1,0 +1,10 @@
+val insere : 'a -> 'a list -> 'a list
+val tri_insertion : 'a list -> 'a list
+val extrait_min : 'a list -> 'a * 'a list
+val tri_selection : 'a list -> 'a list
+val scinde : 'a list -> 'a list * 'a list
+val fusionne : 'a list -> 'a list -> 'a list
+val tri_fusion : 'a list -> 'a list
+val tri_rapide : 'a list -> 'a list
+val est_croissante : 'a list -> bool
+val affiche : int list -> unit

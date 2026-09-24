@@ -1,0 +1,95 @@
+# The caml-prépa site, édition française. `../en/` is the English one, and
+# `../index.html` is the chooser that sends a reader to whichever suits.
+#
+# Both editions have the same pages in the same order, so a change to one
+# has an obvious place in the other. `test_the_two_editions_match` says so.
+#
+# Build both with `make -C examples ocaml-docs`. Both configurations sit
+# here, beside `site/`, because zensical writes only inside the directory
+# its configuration lives in.
+#
+# `src/play/` is the playground, copied in by the build with this
+# edition's strings, and `src/language/reference.md` is generated from the
+# compiler. Neither is in the repository.
+
+[project]
+site_name = "caml-prépa"
+site_url = "https://caml-prepa.lab.abilian.com/fr/"
+copyright = "Copyright &copy; 2026 Stefane Fermigier, Apache-2.0"
+site_description = "Un compilateur pour le sous-ensemble d'OCaml enseigné en classes préparatoires, avec un bac à sable qui tourne dans le navigateur."
+docs_dir = "fr/src"
+site_dir = "site/fr"
+# The header's language selector points at each edition's root;
+# `lang.js` rewrites it to the matching page. Without the script the
+# links still work, they just go to the other home page.
+extra_javascript = ["lang.js"]
+
+nav = [
+  { "Accueil" = "index.md" },
+  { "Premiers pas" = "getting-started.md" },
+  { "Le langage" = [
+    { "Visite guidée" = "language/tour.md" },
+    { "Le bac à sable" = "language/playground.md" },
+    { "Aide-mémoire" = "language/reference.md" },
+    { "Spécification" = "language/specification.md" },
+  ] },
+  { "Comment marche le compilateur" = [
+    { "La forme d'un compilateur" = "compiler/index.md" },
+    { "1. Lire le texte" = "compiler/reading.md" },
+    { "2. Comprendre ce qu'il veut dire" = "compiler/meaning.md" },
+    { "3. L'exécuter, deux fois" = "compiler/running.md" },
+  ] },
+]
+
+[[project.extra.alternate]]
+name = "Français"
+link = "/fr/"
+lang = "fr"
+
+[[project.extra.alternate]]
+name = "English"
+link = "/en/"
+lang = "en"
+
+[project.theme]
+features = [
+  "navigation.tabs",
+  "navigation.tabs.sticky",
+  "navigation.sections",
+  "navigation.path",
+  "navigation.top",
+  "navigation.instant",
+  "toc.follow",
+  "search.highlight",
+  "content.code.copy",
+]
+
+[[project.theme.palette]]
+scheme = "default"
+primary = "deep orange"
+accent = "deep orange"
+toggle.icon = "lucide/sun"
+toggle.name = "Passer en mode sombre"
+
+[[project.theme.palette]]
+scheme = "slate"
+primary = "deep orange"
+accent = "deep orange"
+toggle.icon = "lucide/moon"
+toggle.name = "Passer en mode clair"
+
+[project.theme.icon]
+logo = "lucide/graduation-cap"
+
+[project.markdown_extensions.admonition]
+[project.markdown_extensions.attr_list]
+[project.markdown_extensions.def_list]
+[project.markdown_extensions.tables]
+[project.markdown_extensions.toc]
+permalink = true
+[project.markdown_extensions.pymdownx.highlight]
+anchor_linenums = true
+[project.markdown_extensions.pymdownx.superfences]
+[project.markdown_extensions.pymdownx.details]
+[project.markdown_extensions.pymdownx.tabbed]
+alternate_style = true

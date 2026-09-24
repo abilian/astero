@@ -1,0 +1,11 @@
+val voleur : int array -> int -> int array
+val possible : int -> int array -> int -> bool
+val sncf : int -> int array -> int -> int array
+val ajoute : int -> int list -> int list
+val retire : 'a -> 'a list -> 'a list
+val maximum : 'a list -> 'a
+val camion : int array -> int -> int
+val salle : int array -> int array -> int list
+val rapide : int array -> int -> int list
+val affiche_tableau : int array -> unit
+val affiche_liste : int list -> unit

@@ -1,0 +1,9 @@
+val create : int array -> uf
+val find : uf -> int -> int
+val union : uf -> int -> int -> unit
+val print_uf : uf -> unit
+val merge : edge array -> edge array -> edge array
+val merge_sort : edge array -> edge array
+val filter_some : 'a option array -> 'a array
+val kruskal : graph -> graph
+val print_graph : graph -> unit

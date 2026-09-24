@@ -1,0 +1,88 @@
+target-version = "py311"
+preview = true
+
+lint.select = [
+    "ALL",
+]
+
+include = [
+    "pyproject.toml",
+    "src/**/*.py",
+    "tests/**/*.py",
+    # The tutorial's compiler is code the docs quote, so it is held to the
+    # same bar. Left out, it was linted only by the pre-commit hook.
+    "examples/**/*.py",
+]
+
+lint.extend-ignore = [
+    # ── House style, matching postpile's ruff.toml and its rationale ──
+    "TRY003",  # raise-vanilla-args   \
+    "EM101",   # raw-string-in-exception   } message-in-a-variable is noise
+    "EM102",   # f-string-in-exception     /
+    "EM103",   # dot-format-in-exception
+    "PLR0911", # too-many-return-statements
+    "PLR0913", # too-many-arguments — keyword-only options with defaults — dispatch functions return early per case
+    "TC001",   # typing-only-first-party-import  \  kept as runtime imports;
+    "TC002",   # typing-only-third-party-import   } annotations are strings
+    "TC003",   # typing-only-standard-library-import /  via __future__
+    # Later (or never)
+    "CPY", # Copyright
+    "A",
+    "ANN",
+    "ERA",
+    "FBT",
+    "D",
+    "DOC",
+
+    # False positive (or not)
+    "S101", # Use of `assert` detected
+    "D203", # one-blank-line-before-class
+    "D213", # multi-line-summary-second-line
+    "COM812", # ...
+    "T201", # Print...
+    "PERF401", # list comprehension - explicit append loop is clearer
+
+    # Fix later (or not)
+    # ...
+]
+
+[lint.extend-per-file-ignores]
+"src/astero/testing/generate.py" = [
+    # A seeded generator, for reproducible fuzzing rather than cryptography.
+    "S311",
+]
+"src/astero/python/lang.py" = [
+    # `import _ast`. The C module is the real grammar; the deprecated shims
+    # (`Num`, `Index`, `Suite`, `slice`, ...) are defined in Python in
+    # `ast.py` and never come out of the parser. Where a class is defined is
+    # the only thing that tells the two apart on 3.11 through 3.15, and
+    # `ast.py` itself is built on `from _ast import *`.
+    "PLC2701", # import-private-name
+]
+
+"**/tests/**/*.py" = [
+    "ARG001", # unused-function-argument — hook and callback signatures are fixed
+    "BLE001", #  blind-except
+    # A coverage test reads the `match` inside the function that dispatches,
+    # and in the OCaml example that function is private because a public
+    # wrapper in front of it is the seam the stepper watches through. Naming
+    # it is the whole point of the test.
+    "SLF001", # private-member-access
+    "D",
+    "DOC",
+    "ANN",
+    "PLR2004",
+    "INP001",
+    "PLC0415", # runtime imports for optional dependencies
+    "E501", # line too long in test assertions
+    "N802", # naming
+    # The differential oracle: a test runs the program through CPython and
+    # through the compiler and compares. That means `exec` on a source string,
+    # which is the whole technique rather than an accident.
+    "S102",
+]
+
+[lint.isort]
+combine-as-imports = true
+required-imports = ["from __future__ import annotations"]
+known-first-party = ["astero"]

@@ -1,0 +1,557 @@
+/* Palette on :root, redefined once for dark. Nothing else names a colour. */
+:root {
+  color-scheme: light dark;
+  --page: #fbfaf8;
+  --panel: #ffffff;
+  --ink: #1b1a18;
+  --faint: #6d6a63;
+  --line: #ddd8cf;
+  --accent: #7a3b12;
+  --bad: #a11b1b;
+  --good: #1f6b32;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #17161a;
+    --panel: #1e1d22;
+    --ink: #e8e5e0;
+    --faint: #9b968d;
+    --line: #33313a;
+    --accent: #e0a06a;
+    --bad: #f08a8a;
+    --good: #86d29b;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* An element's own `display` beats the browser's rule for `hidden`, which
+   is how the Step panel came to show under every tab. */
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  padding: 1.5rem clamp(1rem, 4vw, 3rem) 2rem;
+  background: var(--page);
+  color: var(--ink);
+  font: 15px/1.55 var(--sans);
+}
+
+header {
+  max-width: 62rem;
+}
+h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+}
+header p {
+  margin: 0.4rem 0 0;
+  color: var(--faint);
+  max-width: 58rem;
+}
+a {
+  color: var(--accent);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin: 1.2rem 0 0.8rem;
+}
+.bar label {
+  color: var(--faint);
+  font-size: 0.85rem;
+}
+
+select,
+button {
+  font: inherit;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 0.32rem 0.7rem;
+}
+button {
+  cursor: pointer;
+}
+button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+button:disabled,
+select:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+#run-button {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+.quiet {
+  color: var(--faint);
+}
+
+#status {
+  color: var(--faint);
+  font-size: 0.85rem;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+#status.bad {
+  color: var(--bad);
+}
+#status.good {
+  color: var(--good);
+}
+
+main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  main {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pane {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  overflow: hidden;
+  min-width: 0;
+}
+.pane h2 {
+  margin: 0;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+  border-bottom: 1px solid var(--line);
+}
+
+textarea {
+  display: block;
+  width: 100%;
+  height: 30rem;
+  border: 0;
+  padding: 0.8rem;
+  resize: vertical;
+  background: transparent;
+  color: var(--ink);
+  font: 13px/1.6 var(--mono);
+  tab-size: 2;
+}
+textarea:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+}
+.tabs button {
+  border: 0;
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--faint);
+  padding: 0.5rem 0.85rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+.tabs button[aria-selected="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+.view {
+  margin: 0;
+  padding: 0.8rem;
+  height: 30rem;
+  overflow: auto;
+  font: 13px/1.6 var(--mono);
+  white-space: pre;
+}
+
+/* The views after an edit, until Run brings them up to date. */
+.stale .view,
+.stale .hint {
+  opacity: 0.45;
+}
+
+/* One sentence under the tabs saying what the view shows. */
+.hint {
+  margin: 0;
+  padding: 0.5rem 0.8rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--faint);
+  font-size: 0.85rem;
+}
+.hint code {
+  font: 0.95em var(--mono);
+}
+
+/* A long line of the read-back source is still one line of the programme,
+   and scrolling sideways to find its end is what made the view unreadable. */
+#printed {
+  white-space: pre-wrap;
+}
+
+/* ------------------------------------------------------------- names view */
+
+#names {
+  white-space: normal;
+  font: 14px/1.5 var(--sans);
+}
+#names h3 {
+  margin: 0.2rem 0 0.4rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--faint);
+}
+#names section + section {
+  margin-top: 1rem;
+}
+.scope-row {
+  display: flex;
+  gap: 1rem;
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.scope-row:hover {
+  background: rgba(127, 127, 127, 0.12);
+}
+.scope-row .what {
+  flex: 0 0 auto;
+  min-width: 14rem;
+}
+.scope-row .what code,
+.scope-row .names {
+  font: 13px/1.5 var(--mono);
+}
+.scope-row .where {
+  color: var(--faint);
+  font-size: 0.8rem;
+}
+.scope-row .names.none {
+  color: var(--faint);
+}
+.unbound {
+  margin: 0 0 0.8rem;
+  color: var(--bad);
+  font: 13px/1.5 var(--mono);
+}
+
+#errors {
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid var(--line);
+  color: var(--bad);
+  font: 13px/1.5 var(--mono);
+  white-space: pre-wrap;
+}
+
+footer {
+  margin-top: 1.2rem;
+  color: var(--faint);
+  font-size: 0.85rem;
+}
+footer p {
+  margin: 0;
+  max-width: 62rem;
+}
+kbd {
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0 0.3rem;
+  font: 0.85em var(--mono);
+}
+
+
+/* ---------------------------------------------------------- help pages */
+
+body.prose {
+  max-width: 52rem;
+  margin: 0 auto;
+}
+body.prose main {
+  display: block;
+}
+h1.plain::after {
+  content: none;
+}
+nav {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+body.prose h2 {
+  margin: 2rem 0 0.6rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  font-size: 1.1rem;
+}
+body.prose h3 {
+  margin: 1.4rem 0 0.4rem;
+  font-size: 0.95rem;
+}
+body.prose p,
+body.prose dd {
+  max-width: 46rem;
+}
+body.prose dt {
+  margin-top: 0.7rem;
+  font: 13px/1.5 var(--mono);
+}
+body.prose dd {
+  margin: 0.2rem 0 0 1.4rem;
+}
+
+code {
+  font: 0.9em var(--mono);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0 0.25em;
+}
+pre {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 0.8rem;
+  overflow-x: auto;
+  font: 13px/1.6 var(--mono);
+}
+pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: 1em;
+}
+
+table {
+  border-collapse: collapse;
+  margin: 0.6rem 0;
+  font-size: 0.9rem;
+}
+th,
+td {
+  text-align: left;
+  padding: 0.25rem 1.2rem 0.25rem 0;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+th {
+  color: var(--faint);
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.note {
+  border-left: 3px solid var(--accent);
+  padding-left: 0.8rem;
+  color: var(--faint);
+}
+.derived {
+  font: 0.65em var(--sans);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.1em 0.55em;
+  vertical-align: 0.3em;
+}
+.words code {
+  margin-right: 0.15rem;
+  line-height: 2;
+}
+
+/* The language switch sits apart from the section links beside it. */
+nav a.switch {
+  margin-left: auto;
+  color: var(--faint);
+}
+
+/* ---------------------------------------------------------------- stepping */
+
+/* The Step view is the only one that is not a block of text, so it opts out
+   of the `pre` the other views share. */
+#step {
+  display: block;
+  overflow: auto;
+  white-space: normal;
+  font-family: inherit;
+}
+
+.transport {
+  display: flex;
+  gap: 0.3rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+}
+
+.transport button {
+  min-width: 2.2rem;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.transport input[type="range"] {
+  flex: 1;
+  min-width: 6rem;
+}
+
+.count {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  opacity: 0.8;
+}
+
+/* The source and the emitted Python, shown read-only so a span can be
+   marked. The textarea beside it stays the thing you type in. */
+.mirror {
+  position: relative;
+  margin: 0 0 0.6rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  background: var(--sunken, rgba(127, 127, 127, 0.1));
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-x: auto;
+  max-height: 16rem;
+}
+
+/* On the way in, the sub-expression about to be evaluated. On the way out,
+   the one that has just produced a value. */
+.mirror mark.enter {
+  background: #ffe08a;
+  color: inherit;
+  border-radius: 2px;
+}
+
+.mirror mark.value {
+  background: #9ad9a5;
+  color: inherit;
+  border-radius: 2px;
+}
+
+#step-where {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+}
+#step-where div {
+  display: flex;
+  gap: 0.6rem;
+}
+#step-where .label {
+  flex: 0 0 6rem;
+  color: var(--faint);
+}
+#step-where code {
+  font: 0.95em var(--mono);
+}
+
+#step-note {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  color: #b23;
+}
+
+.step-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0 1.2rem;
+}
+
+.step-grid h3,
+#step h3 {
+  margin: 0.4rem 0 0.3rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+
+#step table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.82rem;
+}
+
+#step td {
+  padding: 0.12rem 0.4rem 0.12rem 0;
+  vertical-align: top;
+  border-bottom: 1px solid rgba(127, 127, 127, 0.18);
+}
+
+#step td:first-child {
+  width: 7rem;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+#step-output {
+  margin: 0;
+  padding: 0.5rem;
+  min-height: 2rem;
+  border-radius: 4px;
+  background: var(--sunken, rgba(127, 127, 127, 0.1));
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+}
+
+@media (prefers-color-scheme: dark) {
+  .mirror mark.enter {
+    background: #7a6013;
+    color: #fff;
+  }
+  .mirror mark.value {
+    background: #2e6b3a;
+    color: #fff;
+  }
+  #step-note {
+    color: #f88;
+  }
+}
+
+/* On a phone the names go under the label, so neither column is squeezed. */
+@media (max-width: 40rem) {
+  .scope-row {
+    flex-wrap: wrap;
+    gap: 0 1rem;
+  }
+  .scope-row .what {
+    min-width: 0;
+  }
+}

@@ -1,0 +1,13 @@
+val identite : int -> int array
+val est_permutation : int array -> bool
+val compose : 'a array -> int array -> 'a array
+val inverse : int array -> int array
+val suivante : 'a array -> 'a array
+val enumere : 'a array -> 'a array list
+val affiche : int array -> unit
+val cycles : int array -> int list list
+val signature : int array -> int
+val pgcd : int -> int -> int
+val ppcm : int -> int -> int
+val ordre : int array -> int
+val affiche_cycles : int array -> unit

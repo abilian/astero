@@ -1,0 +1,5 @@
+val print_knapsack : knapsack -> unit
+val print_solution : knapsack -> float array -> unit
+val sort_knapsack : knapsack -> knapsack
+val verify_knapsack : knapsack -> solution -> float option
+val fractionalknapsack_greedy : knapsack -> solution

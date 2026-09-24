@@ -1,0 +1,6 @@
+val couts : int array -> int array array * int array array
+val cout : int array -> int
+val parenthese : int array -> arbre
+val affiche : arbre -> unit
+val cout_gauche : int array -> int
+val cout_droite : int array -> int

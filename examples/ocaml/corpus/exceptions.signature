@@ -1,0 +1,5 @@
+val parse_digit : char -> int
+val checked : int -> int -> int
+val safe_div : int -> int -> int option
+val describe : char -> string
+val first_over : int -> int list -> int

@@ -1,0 +1,26 @@
+image: alpine/latest
+packages:
+  - uv
+  - gcc
+  - make
+  - python3-dev
+
+secrets:
+  - b88a4c2c-944c-42a6-9fbb-7483049c458a
+
+sources:
+  - git@git.sr.ht:~sfermigier/astero
+
+tasks:
+  - install: |
+      cd astero
+      uv sync
+  - test: |
+      cd astero
+      uv run pytest -q --tb=short
+  - lint: |
+      cd astero
+      make lint
+  - nox: |
+      cd astero
+      uvx nox -s check

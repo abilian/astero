@@ -1,0 +1,4 @@
+val split_at : int -> word -> word * word
+val split : word -> (word * word) list
+val match_regexp : regexp -> word -> bool
+val e : regexp

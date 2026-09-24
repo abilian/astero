@@ -1,0 +1,47 @@
+repos:
+
+- repo: https://github.com/charliermarsh/ruff-pre-commit
+  rev: 'v0.16.8'
+  hooks:
+    - id: ruff
+    - id: ruff-format
+      # Ruff formats fenced Python inside Markdown from 0.16, and `ruff.toml`'s
+      # `include` lists only `.py` and `pyproject.toml`. The docs' code blocks
+      # are written for a reader — the README aligns four trailing comments so
+      # the four binding positions line up — and a formatter collapses that.
+      # Kept to the files the project's own config covers.
+      types_or: [python, pyi]
+
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v6.0.0
+  hooks:
+    # Generic
+    - id: check-added-large-files
+    - id: fix-byte-order-marker
+    - id: check-case-conflict
+    - id: check-executables-have-shebangs
+    - id: check-merge-conflict
+    - id: check-symlinks
+    # Basic syntax checks
+    - id: check-ast
+    - id: check-json
+    - id: check-toml
+    - id: check-xml
+    - id: check-yaml
+    # Security
+    - id: detect-private-key
+    # Whitespace. The OCaml example's corpus is excluded: a `.expected`
+    # file is the exact bytes a programme prints, and two of them end in a
+    # space no newline follows. Fixing that whitespace changes what the
+    # test asserts, and it did once before this exclusion existed.
+    # `corpus/grimaud/` holds verbatim copies whose headers say "Unchanged
+    # below this comment", so its whitespace is upstream's, not ours.
+    - id: end-of-file-fixer
+      exclude: '^examples/ocaml/corpus/(.*\.expected|grimaud/.*)$'
+    - id: mixed-line-ending
+      exclude: '^examples/ocaml/corpus/(.*\.expected|grimaud/.*)$'
+    - id: trailing-whitespace
+      exclude: '^examples/ocaml/corpus/(.*\.expected|grimaud/.*)$'
+    # Misc Python
+    - id: debug-statements
+    - id: check-docstring-first

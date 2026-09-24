@@ -1,0 +1,11 @@
+val pile_vide : unit -> 'a pile
+val empile : 'a pile -> 'a -> unit
+val est_vide : 'a pile -> bool
+val hauteur : 'a pile -> int
+val depile : 'a pile -> 'a
+val sommet : 'a pile -> 'a
+val file_vide : unit -> 'a file
+val enfile : 'a file -> 'a -> unit
+val file_est_vide : 'a file -> bool
+val defile : 'a file -> 'a
+val bien_parenthesee : string -> bool

@@ -1,0 +1,11 @@
+val appartient : 'a -> 'a arbre -> bool
+val sans_conflit : 'a arbre -> bool
+val hauteur_noire : 'a arbre -> int
+val equilibre_noir : 'a arbre -> bool
+val equilibre : 'a arbre -> 'a arbre
+val insere : 'a -> 'a arbre -> 'a arbre
+val de_liste : 'a list -> 'a arbre
+val taille : 'a arbre -> int
+val hauteur : 'a arbre -> int
+val infixe : 'a arbre -> 'a list
+val insere_sans_couleur : 'a -> 'a arbre -> 'a arbre

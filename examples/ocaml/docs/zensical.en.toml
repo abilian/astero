@@ -1,0 +1,95 @@
+# The caml-prépa site, English edition. `../fr/` is the French one, and
+# `../index.html` is the chooser that sends a reader to whichever suits.
+#
+# Both editions have the same pages in the same order, so a change to one
+# has an obvious place in the other. `test_the_two_editions_match` says so.
+#
+# Build both with `make -C examples ocaml-docs`. Both configurations sit
+# here, beside `site/`, because zensical writes only inside the directory
+# its configuration lives in.
+#
+# `src/play/` is the playground, copied in by the build with this
+# edition's strings, and `src/language/reference.md` is generated from the
+# compiler. Neither is in the repository.
+
+[project]
+site_name = "caml-prépa"
+site_url = "https://caml-prepa.lab.abilian.com/en/"
+copyright = "Copyright &copy; 2026 Stefane Fermigier, Apache-2.0"
+site_description = "A compiler for the OCaml subset taught in French classes préparatoires, with a playground you can run in your browser."
+docs_dir = "en/src"
+site_dir = "site/en"
+# The header's language selector points at each edition's root;
+# `lang.js` rewrites it to the matching page. Without the script the
+# links still work, they just go to the other home page.
+extra_javascript = ["lang.js"]
+
+nav = [
+  { "Home" = "index.md" },
+  { "Getting started" = "getting-started.md" },
+  { "The language" = [
+    { "A tour" = "language/tour.md" },
+    { "Using the playground" = "language/playground.md" },
+    { "Reference card" = "language/reference.md" },
+    { "Specification" = "language/specification.md" },
+  ] },
+  { "How the compiler works" = [
+    { "The shape of a compiler" = "compiler/index.md" },
+    { "1. Reading the text" = "compiler/reading.md" },
+    { "2. Working out what it means" = "compiler/meaning.md" },
+    { "3. Running it, twice" = "compiler/running.md" },
+  ] },
+]
+
+[[project.extra.alternate]]
+name = "English"
+link = "/en/"
+lang = "en"
+
+[[project.extra.alternate]]
+name = "Français"
+link = "/fr/"
+lang = "fr"
+
+[project.theme]
+features = [
+  "navigation.tabs",
+  "navigation.tabs.sticky",
+  "navigation.sections",
+  "navigation.path",
+  "navigation.top",
+  "navigation.instant",
+  "toc.follow",
+  "search.highlight",
+  "content.code.copy",
+]
+
+[[project.theme.palette]]
+scheme = "default"
+primary = "deep orange"
+accent = "deep orange"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+scheme = "slate"
+primary = "deep orange"
+accent = "deep orange"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to light mode"
+
+[project.theme.icon]
+logo = "lucide/graduation-cap"
+
+[project.markdown_extensions.admonition]
+[project.markdown_extensions.attr_list]
+[project.markdown_extensions.def_list]
+[project.markdown_extensions.tables]
+[project.markdown_extensions.toc]
+permalink = true
+[project.markdown_extensions.pymdownx.highlight]
+anchor_linenums = true
+[project.markdown_extensions.pymdownx.superfences]
+[project.markdown_extensions.pymdownx.details]
+[project.markdown_extensions.pymdownx.tabbed]
+alternate_style = true

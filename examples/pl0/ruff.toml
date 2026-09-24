@@ -1,0 +1,24 @@
+# The root's configuration, plus the waivers this example needs. Ruff finds
+# the nearest configuration for each file, so `make lint` at the root still
+# checks these and still applies what is below.
+extend = "../../ruff.toml"
+
+# This project's own package, and the library it is built on. Its modules
+# import each other relatively, so they sort as local either way; this is
+# what keeps `astero` in the first-party block.
+src = ["src", "../../src"]
+
+[lint.extend-per-file-ignores]
+"machine.py" = [
+    # An instruction dispatch loop is one branch per opcode. Splitting it
+    # into handlers would spread the machine across the file and hide the
+    # thing a reader came to see, which is the whole instruction set.
+    "C901",    # complex-structure
+    "PLR0912", # too-many-branches
+]
+"interpret.py" = [
+    # Same shape: one `case` per production, and the point is that you can
+    # read the whole language in one function.
+    "C901",    # complex-structure
+    "PLR0912", # too-many-branches
+]

@@ -1,0 +1,14 @@
+val appartient : 'a -> 'a list -> bool
+val union : 'a list -> 'a list -> 'a list
+val intersection : 'a list -> 'a list -> 'a list
+val difference : 'a list -> 'a list -> 'a list
+val cardinal : 'a list -> int
+val multiplicite : 'a -> 'a list -> int
+val retire : 'a -> 'a list -> 'a list
+val somme_m : 'a list -> 'a list -> 'a list
+val difference_m : 'a list -> 'a list -> 'a list
+val union_m : 'a list -> 'a list -> 'a list
+val intersection_m : 'a list -> 'a list -> 'a list
+val insere : 'a -> 'a list -> 'a list
+val canonique : 'a list -> 'a list
+val affiche : int list -> unit

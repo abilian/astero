@@ -1,0 +1,7 @@
+val augmenting_graph : bipartite_graph -> matching -> graph
+val find_directed_path : graph -> int -> int -> path
+val print_matching : matching -> unit
+val find_augmenting_path : bipartite_graph -> matching -> path
+val update_matching : matching -> path -> matching
+val maximum_matching : bipartite_graph -> matching
+val convert : b_graph -> bipartite_graph

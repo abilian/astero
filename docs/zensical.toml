@@ -1,0 +1,103 @@
+# Zensical configuration. Sources are in docs/src/; build with `make docs`
+# (= `zensical build -f docs/zensical.toml --strict`), preview with
+# `make docs-serve`.
+
+[project]
+site_name = "astero"
+site_url = "https://astero.lab.abilian.com"
+copyright = "Copyright &copy; 2026 Stefane Fermigier, Apache-2.0"
+site_description = "Derivations over a declared grammar, for building compilers for Python and Python-adjacent languages."
+docs_dir = "src"
+
+# Each top-level entry is a top tab; its children fill the left sidebar.
+nav = [
+  { "Home" = "index.md" },
+  { "Getting started" = "getting-started.md" },
+  { "Tutorials" = [
+    { "TinyPy: a Python subset" = "tutorial.md" },
+    { "PL/0: your own language" = "tutorial-pl0.md" },
+    { "caml-prépa: a compiler you can look inside" = "caml/index.md" },
+    { "caml-prépa: the front end" = "caml/front.md" },
+    { "caml-prépa: the middle end" = "caml/middle.md" },
+    { "caml-prépa: the back ends" = "caml/back.md" },
+    { "caml-prépa: the playground" = "caml/playground.md" },
+  ] },
+  { "Guides" = [
+    { "User guide" = "guides/user-guide.md" },
+    { "Adopting astero" = "guides/adopting.md" },
+    { "Developer guide" = "guides/developer-guide.md" },
+  ] },
+  { "Reference" = [
+    { "Overview" = "reference/index.md" },
+    { "Roles" = "reference/roles.md" },
+    { "Modules" = "reference/modules.md" },
+  ] },
+  { "API" = [
+    { "grammar" = "api/grammar.md" },
+    { "rewriting" = "api/rewriting.md" },
+    { "scopes" = "api/scopes.md" },
+    { "hygiene" = "api/hygiene.md" },
+    { "coverage" = "api/coverage.md" },
+    { "emit_rules" = "api/emit_rules.md" },
+    { "emit" = "api/emit.md" },
+    { "python" = "api/python.md" },
+    { "python.precedence" = "api/python_precedence.md" },
+    { "python.emit" = "api/python_emit.md" },
+    { "tables" = "api/tables.md" },
+    { "testing" = "api/testing.md" },
+  ] },
+]
+
+# The API reference renders the source's own docstrings, so it cannot drift
+# from the code the way a hand-written one does.
+[project.plugins.mkdocstrings]
+[project.plugins.mkdocstrings.handlers.python.options]
+show_root_heading = true
+show_source = false
+members_order = "source"
+separate_signature = true
+show_signature_annotations = true
+signature_crossrefs = true
+docstring_section_style = "table"
+filters = ["!^_"]
+
+[project.theme]
+features = [
+  "navigation.tabs",
+  "navigation.tabs.sticky",
+  "navigation.sections",
+  "navigation.path",
+  "navigation.top",
+  "navigation.instant",
+  "toc.follow",
+  "search.highlight",
+  "content.code.copy",
+]
+
+[[project.theme.palette]]
+scheme = "default"
+primary = "teal"
+accent = "teal"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+scheme = "slate"
+primary = "teal"
+accent = "teal"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to light mode"
+
+[project.theme.icon]
+logo = "lucide/git-branch"
+
+[project.markdown_extensions.admonition]
+[project.markdown_extensions.attr_list]
+[project.markdown_extensions.def_list]
+[project.markdown_extensions.tables]
+[project.markdown_extensions.toc]
+permalink = true
+[project.markdown_extensions.pymdownx.highlight]
+anchor_linenums = true
+[project.markdown_extensions.pymdownx.superfences]
+[project.markdown_extensions.pymdownx.details]

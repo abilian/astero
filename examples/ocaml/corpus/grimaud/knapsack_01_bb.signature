@@ -1,0 +1,14 @@
+val initial_capacity : int
+val create : ('a -> 'a -> bool) -> 'a priorityqueue
+val size : 'a priorityqueue -> int
+val is_empty : 'a priorityqueue -> bool
+val swap : 'a priorityqueue -> int -> int -> unit
+val insert : 'a priorityqueue -> 'a -> unit
+val extract : 'a priorityqueue -> 'a
+val print_knapsack : knapsack -> unit
+val print_solution : knapsack -> float array -> unit
+val print_node : node -> unit
+val sort_knapsack : knapsack -> knapsack
+val verify_knapsack : knapsack -> solution -> float option
+val compute_bound : knapsack -> node -> float
+val binaryknapsack_bb : knapsack -> solution

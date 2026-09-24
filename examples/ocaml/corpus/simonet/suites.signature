@@ -1,0 +1,8 @@
+val fib_exponentiel : int -> int
+val fib_lineaire : int -> int
+val couple : int -> int * int
+val fib_logarithmique : int -> int
+val itere : ('a -> 'a) -> 'a -> int -> 'a
+val lineaire_ordre2 : int -> int -> int -> int -> int -> int
+val premiers : (int -> int) -> int -> int array
+val affiche : int array -> unit

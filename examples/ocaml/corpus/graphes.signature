@@ -1,0 +1,6 @@
+val voisins : 'a array -> int -> 'a
+val ordre : 'a array -> int
+val degres : 'a list array -> int array
+val profondeur : int list array -> int -> int list
+val largeur : int list array -> int -> int list
+val connexe : int list array -> bool

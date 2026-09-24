@@ -1,0 +1,7 @@
+val ecart2 : int -> int -> int
+val distance2 : point -> point -> int
+val naif_intervalle : point array -> int -> int -> int
+val naif : point array -> int
+val trie_par_abscisse : point array -> point array
+val proches : point array -> int -> int -> int
+val plus_proches : point array -> int

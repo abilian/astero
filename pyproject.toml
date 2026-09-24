@@ -1,0 +1,176 @@
+[project]
+name = "abilian-astero"
+version = "0.2.0"
+description = "astero: declared grammars for ASTs and IRs, and the transformations derived from them."
+readme = "README.md"
+authors = [
+    { name = "Stefane Fermigier", email = "sf@abilian.com" }
+]
+requires-python = ">=3.11"
+dependencies = []
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+keywords = ["compiler", "ast", "grammar", "transpiler", "code-generation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Compilers",
+    "Topic :: Software Development :: Code Generators",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Documentation = "https://astero.lab.abilian.com"
+
+
+[build-system]
+requires = ["uv_build>=0.11.33,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+# The distribution is `abilian-astero` because PyPI would not give up
+# `astero`, but the import name is and stays `astero`. Without this the
+# backend derives the module path from the project name and looks for
+# `src/abilian_astero/`.
+module-name = "astero"
+
+[dependency-groups]
+docs = [
+    # Zensical's published versions are 0.0.x, and it needs a recent Python.
+    # This project's floor is 3.11, so the group is marked rather than pinned:
+    # `make docs` on an older interpreter is the only thing it affects.
+    "zensical>=0.0.54; python_version >= '3.13' and python_version < '3.15'",
+    # The API reference is generated from the source's own docstrings, so it
+    # cannot drift. Zensical shims the mkdocs plugin.
+    "mkdocstrings[python]>=0.27; python_version >= '3.13' and python_version < '3.15'",
+]
+# What running the suite needs, and nothing else. Separate from `dev`
+# because the version matrix installs it on every supported interpreter, and
+# `pre-commit` pulls in `pyyaml`, which does not build on 3.15.
+test = [
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+]
+dev = [
+    { include-group = "test" },
+    # postpile's own dependency, and the only thing standing between the SSA
+    # oracles and running. It does not make postpile a dependency: those
+    # tests still locate a checkout (`POSTPILE_SRC`, or a sibling directory)
+    # and skip when there is none. Without this they skipped on the import
+    # instead, so the oracle never ran and nothing said so.
+    "postyp>=0.3.0",
+    "mypy>=2.3.0",
+    "nox>=2026.7.11",
+    "pre-commit>=4.6.1",
+    "pyrefly>=1.2.0",
+    "ruff>=0.16.2",
+    "ty>=0.0.69",
+    "zuban>=0.9.1",
+    # tepyd needs 3.12; this project's floor is 3.11, so the marker keeps the
+    # lock resolvable there. Same shape as the `docs` group's zensical pin.
+    "tepyd; python_version >= '3.12'",
+]
+
+[tool.uv.workspace]
+# The three worked examples are projects of their own: their own
+# dependencies, their own tests, their own ruff configuration. They stay in
+# this checkout because they are astero's only consumers here, and the
+# cheapest signal that a change to the library broke one. `examples/Makefile`
+# runs them and `make test` calls it.
+members = ["examples/*"]
+
+[tool.pytest.ini_options]
+# astero's own tests. Each example's live beside it and run from there.
+testpaths = ["tests"]
+# `postpile_ir` is two read-only mirrors of postpile's IR that several tests
+# import as an oracle. A fixture, so it sits with the tests rather than in
+# `examples/`, where it was the only entry nobody was meant to read as an
+# example.
+pythonpath = ["tests/fixtures"]
+markers = [
+    "unit: fast, isolated unit tests",
+    "integration: component-interaction tests",
+    "e2e: end-to-end tests",
+]
+
+[tool.ty.environment]
+# `make lint` runs the checkers over the whole checkout, so they need the
+# paths the examples are run on: each is a package under its own `src/`.
+# `tests/fixtures` is for `postpile_ir`.
+extra-paths = [
+    "examples/pl0/src",
+    "examples/tinypy/src",
+    "examples/ocaml/src",
+    # The playground's two scripts, which its tests import by name the way
+    # the browser imports them from the bundle's root.
+    "examples/ocaml/web",
+    "tests/fixtures",
+]
+
+
+[tool.mypy]
+# zuban reads mypy's configuration. `mypy_path` is the same fact as
+# `[tool.ty.environment] extra-paths` and pyrefly's `search-path`: the worked
+# examples import each other by bare name. `make lint` runs mypy over `src`
+# only, so this changes nothing for it and everything for zuban.
+mypy_path = "src:examples/pl0/src:examples/tinypy/src:examples/ocaml/src:examples/ocaml/web:tests/fixtures"
+
+[[tool.mypy.overrides]]
+# zuban reads `operator.mod` as returning `None`, which typeshed does not
+# say and mypy does not agree with. Scoped to the one rule and the one
+# module rather than worked around in the code.
+module = ["tinypy.vm"]
+disable_error_code = ["dict-item"]
+
+[tool.pyrefly]
+project-includes = [
+    "**/*.py*",
+    "**/*.ipynb",
+]
+# Same reason as `[tool.ty.environment]` above: the worked examples are
+# standalone programs whose modules import each other by bare name.
+search-path = [
+    "src",
+    "examples/pl0/src",
+    "examples/tinypy/src",
+    "examples/ocaml/src",
+    "examples/ocaml/web",
+    "tests/fixtures",
+]
+
+[tool.tepyd]
+# Generated by `tepyd init` — review and adjust.
+src_root = "src/astero"
+src_package = "astero"
+units = ["*.py"]
+# counter = "internal"   # or "cloc"
+
+# Source units to exclude from analysis (a reason is required):
+# [tool.tepyd.exclude]
+# faker = "why this is not tested"
+
+# Tiers, cheapest first. Add `expects = [...]` to a tier to scope it to
+# the source units it should test (glob patterns over unit names); units
+# outside the scope are reported n/a, not as gaps. Use it when layers map
+# to tiers — e.g. integration `expects = ["repositories/*", "infra/*"]`,
+# e2e `expects = ["web/*"]`. Omit it and the tier is checked against all.
+
+[[tool.tepyd.tiers]]
+name = "a_unit"
+root = "tests/a_unit"
+label = "unit"
+target_share = 0.6
+
+[[tool.tepyd.tiers]]
+name = "b_integration"
+root = "tests/b_integration"
+label = "integration"
+
+[[tool.tepyd.tiers]]
+name = "c_e2e"
+root = "tests/c_e2e"
+label = "e2e"

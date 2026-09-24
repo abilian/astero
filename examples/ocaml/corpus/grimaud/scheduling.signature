@@ -1,0 +1,9 @@
+val init_processors : int -> processor list
+val makespan : scheduling -> int
+val print_task : task -> unit
+val print_processor : processor -> unit
+val print_scheduling : scheduling -> unit
+val sort_tasks : task list -> task list
+val least_loaded : processor list -> processor
+val assign_task : processor -> task -> processor
+val lpt : int -> task list -> scheduling

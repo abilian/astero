@@ -1,0 +1,12 @@
+val memoire_libre : 'a -> (int * 'a) list
+val alloc_first : int -> (int * int) list -> int * (int * int) list
+val cherche_meilleur : int -> ('a * int) list -> int
+val alloc_best : int -> (int * int) list -> int * (int * int) list
+val insere_bloc : 'a -> 'b -> ('a * 'b) list -> ('a * 'b) list
+val fusionne : (int * int) list -> (int * int) list
+val libere : int -> int -> (int * int) list -> (int * int) list
+val vide : int
+val initialise : int array -> int
+val alloc_chainee : int array -> int -> int -> int -> int
+val libres_chainees : int array -> int -> (int * int) list
+val affiche : (int * int) list -> unit

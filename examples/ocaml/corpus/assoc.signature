@@ -1,0 +1,9 @@
+val cherche : 'a -> ('a * 'b) list -> 'b
+val present : 'a -> ('a * 'b) list -> bool
+val ajoute : 'a -> 'b -> ('a * 'b) list -> ('a * 'b) list
+val supprime : 'a -> ('a * 'b) list -> ('a * 'b) list
+val cles : ('a * 'b) list -> 'a list
+val valeurs : ('a * 'b) list -> 'b list
+val taille : 'a list -> int
+val occurrences : 'a list -> ('a * int) list
+val trouve_defaut : 'a -> 'b -> ('a * 'b) list -> 'b

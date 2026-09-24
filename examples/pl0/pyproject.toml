@@ -1,0 +1,24 @@
+[project]
+name = "astero-example-pl0"
+version = "0"
+description = "A compiler for PL/0, Wirth's teaching language, built on astero."
+requires-python = ">=3.11"
+dependencies = ["abilian-astero"]
+
+[tool.uv]
+# A worked example, not a distribution: it is run from this checkout and
+# never built. `package = false` is what says so to the workspace.
+package = false
+
+[tool.uv.sources]
+abilian-astero = { workspace = true }
+
+[dependency-groups]
+test = ["pytest>=9.1.1"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# The sources are a package under `src/`, so it is importable as
+# `pl0.<module>` and cannot shadow a standard-library name the way a
+# directory of top-level modules on `sys.path` would.
+pythonpath = ["src"]

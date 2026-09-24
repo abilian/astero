@@ -1,0 +1,16 @@
+val plus : vecteur -> vecteur -> vecteur
+val moins : vecteur -> vecteur -> vecteur
+val fois : float -> vecteur -> vecteur
+val norme : vecteur -> float
+val quadrant : cellule -> vecteur -> int
+val cellule_vide : vecteur -> float -> cellule
+val coin_fille : cellule -> int -> vecteur
+val insere : arbre -> corps -> vecteur -> float -> arbre
+val place : cellule -> corps -> unit
+val arbre_univers : corps list -> vecteur -> float -> arbre
+val resume : arbre -> float * vecteur
+val attraction : vecteur -> float -> vecteur -> vecteur
+val force : float -> arbre -> vecteur -> vecteur
+val force_directe : corps list -> vecteur -> vecteur
+val milliemes : float -> int
+val affiche : vecteur -> unit

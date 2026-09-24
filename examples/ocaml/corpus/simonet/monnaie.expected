@@ -1,0 +1,9 @@
+oui non non oui 
+[1 0 1 1 1 1 1 0 ]6 6
+[2 1 1 0 ]
+0 1 2 1 1 2 2 2 2 
+[200 100 50 20 10 5 2 1 ] canonique
+[4 3 1 ] contre-exemple 6
+[5 4 1 ] contre-exemple 8
+[10 5 2 1 ] canonique
+[6 3 1 ] canonique

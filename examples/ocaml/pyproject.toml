@@ -1,0 +1,32 @@
+[project]
+name = "astero-example-ocaml"
+version = "0"
+description = "A compiler for the OCaml subset taught in French classes preparatoires."
+requires-python = ">=3.11"
+dependencies = ["abilian-astero"]
+
+# Installed into the workspace environment, where its two siblings are not.
+# It has a command line, and `uv run python -m ocaml` has to find it.
+[build-system]
+requires = ["uv_build>=0.11.33,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+# The package is `ocaml`; the project is named for where it sits.
+module-name = "ocaml"
+
+[tool.uv.sources]
+abilian-astero = { workspace = true }
+
+[dependency-groups]
+test = ["pytest>=9.1.1"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# The sources are a package under `src/`, so it is importable as
+# `ocaml.<module>` and cannot shadow a standard-library name the way a
+# directory of top-level modules on `sys.path` would.
+# `web` is there for the same reason the browser puts the bundle root on
+# its path: `playground.py` is imported by name from beside the packages,
+# not from inside one.
+pythonpath = ["src", "web"]

@@ -1,0 +1,6 @@
+val eps : char
+val automaton_even : automaton
+val automaton_float : automaton
+val is_deterministic : automaton -> bool
+val process_det_automaton : automaton -> (unit -> char option) -> bool
+val main : string array -> unit

@@ -1,0 +1,53 @@
+extend = "../../ruff.toml"
+
+# This project's own package, and the library it is built on. Its modules
+# import each other relatively, so they sort as local either way; this is
+# what keeps `astero` in the first-party block.
+src = ["src", "../../src"]
+
+#: Four dispatches, one `case` per production each, and `astero.coverage`
+#: reads the arms back and fails when the grammar has one they do not.
+#: Splitting a match into handlers would hide the language and leave the
+#: gate reading half of it.
+[lint.extend-per-file-ignores]
+"emit.py" = ["C901", "PLR0912", "PLR0914", "PLR0915"]
+"patterns.py" = ["C901"]
+"interpret.py" = ["C901", "PLR0912", "PLR0914"]
+"infer.py" = ["C901", "PLR0912", "PLR0914", "PLR0915"]
+"compile.py" = ["C901", "PLR0912", "PLR0914", "PLR0915"]
+"web/*.py" = [
+    # Scripts, not a package. `build.py` is run by `make -C examples web`,
+    # and `playground.py` is copied into the bundle's root for the browser
+    # to import by name, so an `__init__.py` beside them would be wrong.
+    "INP001", # implicit-namespace-package
+]
+"pipeline.py" = [
+    # What a compiler produces when you make a mistake is the message, so
+    # every stage records what it caught instead of propagating it. The
+    # emitted Python is executed because "both back ends agree" is the thing
+    # this is here to report.
+    "BLE001", # blind-except
+    "S102",   # exec-builtin
+]
+"runtime.py" = [
+    # `Random` is OCaml's module for a programme's own draws, a pivot or a
+    # maze, and Python's generator stands in for it. Nothing here is a
+    # secret, and `secrets` could not be seeded by `Random.init`.
+    "S311", # suspicious-non-cryptographic-random-usage
+]
+"stepper.py" = [
+    # Recording has to survive whatever the programme it records does, so
+    # that a programme which raises still has a trace and the last step is
+    # where it went wrong. The emitted Python is executed for the same
+    # reason `pipeline.py` executes it: stepping the second back end is the
+    # point of the view. Same two exceptions, same two reasons.
+    "BLE001", # blind-except
+    "S102",   # exec-builtin
+]
+"oracle.py" = [
+    # The differential oracle: it shells out to `ocaml` and compares what
+    # comes back, the same way `examples/tinypy/run_c.py` runs `cc`.
+    "S404", # suspicious-subprocess-import
+    "S603", # subprocess-without-shell-equals-true
+    "S607", # start-process-with-partial-path
+]

@@ -1,0 +1,8 @@
+val n : int
+val eratosthene : int -> bool array
+val decompose_somme : bool array -> int -> bool
+val sommes : int -> int list
+val factorisations : unit -> int array
+val sommes_sures : int array -> bool array
+val produits_surs : bool array -> int array
+val resout : unit -> int * int

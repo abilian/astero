@@ -1,0 +1,9 @@
+val card : 'a list -> int
+val delta : 'a list -> 'a list -> 'a list
+val affiche : int list -> unit
+val depuis : int -> int list -> int list
+val succ : int list -> int list
+val parties : int -> int list -> int list list
+val test_incremental : int -> int list
+val gray : int -> int list
+val configurations : int -> int list list

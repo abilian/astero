@@ -1,0 +1,12 @@
+val square : int -> int
+val hypot : float -> float -> float
+val is_even : int -> bool
+val double : int -> int
+val halve : int -> int
+val mask : int -> int
+val flags : int -> int -> int
+val power : int -> int -> int
+val countdown : int -> unit
+val float_bits : float
+val compare_all : 'a -> 'a -> bool * bool * bool * bool * bool * bool
+val widen : int -> int

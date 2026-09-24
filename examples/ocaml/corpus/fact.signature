@@ -1,0 +1,3 @@
+val fact : int -> int
+val fact_tail : int -> int
+val fact_loop : int -> int

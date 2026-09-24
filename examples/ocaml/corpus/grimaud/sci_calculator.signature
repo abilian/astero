@@ -1,0 +1,9 @@
+val eps : char
+val is_deterministic : automaton -> bool
+val process_det_automaton : automaton -> (unit -> char option) -> bool
+val automaton_float : automaton
+val read_token : string -> string option * string
+val parser : string -> expression
+val eval : expression -> float
+val session : string list ref
+val read_line : unit -> string

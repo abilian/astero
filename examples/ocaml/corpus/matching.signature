@@ -1,0 +1,7 @@
+val area : shape -> float
+val sign : int -> string
+val first_two : int list -> int * int * int
+val vowel : char -> bool
+val corners : int array -> int
+val typed : int * bool -> int
+val both : int option * int option -> int

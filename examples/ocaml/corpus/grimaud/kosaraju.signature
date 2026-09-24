@@ -1,0 +1,5 @@
+val depth_first_search_preorder : graph -> int list
+val depth_first_search_postorder : graph -> int list
+val transposed_graph : graph -> graph
+val depth_first_search_components : graph -> int list -> int list list
+val kosaraju : graph -> int list list

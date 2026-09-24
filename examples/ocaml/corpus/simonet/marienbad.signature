@@ -1,0 +1,10 @@
+val binaire : int -> int list
+val entier : int list -> int
+val ou_exclusif : int list -> int list -> int list
+val somme_nim : int array -> int
+val perdante : int array -> bool
+val coup : int array -> int * int
+val joue : int array -> int * int -> int array
+val vide : int array -> bool
+val affiche : int array -> unit
+val partie : int array -> int
