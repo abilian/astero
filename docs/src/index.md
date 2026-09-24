@@ -1,4 +1,4 @@
-# astero
+<h1><img src="assets/astero-light.svg#only-light" alt="astero" width="320"><img src="assets/astero-dark.svg#only-dark" alt="astero" width="320"></h1>
 
 **The middle end, without writing it.**
 

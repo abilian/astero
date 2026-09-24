@@ -1,4 +1,4 @@
-# astero
+# <img src="https://astero.lab.abilian.com/assets/astero.svg" alt="astero" width="320">
 
 **The middle end, without writing it.**
 

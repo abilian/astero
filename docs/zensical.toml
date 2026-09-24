@@ -73,6 +73,10 @@ features = [
   "search.highlight",
   "content.code.copy",
 ]
+# The header shows the logo as an <img>, which cannot follow the scheme
+# toggle, so the mark is drawn in colours that read on both palettes.
+logo = "assets/astero-mark.svg"
+favicon = "assets/astero-mark.svg"
 
 [[project.theme.palette]]
 scheme = "default"
@@ -87,9 +91,6 @@ primary = "teal"
 accent = "teal"
 toggle.icon = "lucide/moon"
 toggle.name = "Switch to light mode"
-
-[project.theme.icon]
-logo = "lucide/git-branch"
 
 [project.markdown_extensions.admonition]
 [project.markdown_extensions.attr_list]
