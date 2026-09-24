@@ -31,7 +31,14 @@ from typing import Any
 
 from astero.grammar import Grammar, Kind, Production
 from astero.python.rewriting import copy_tree
-from astero.scopes import DOTTED, Scope, bound_names, target_nodes, walk
+from astero.scopes import (
+    DOTTED,
+    Scope,
+    binds_in_scope,
+    bound_names,
+    target_nodes,
+    walk,
+)
 
 
 class CaptureError(Exception):
@@ -187,14 +194,41 @@ def bound_here(node: Any, grammar: Grammar, ns: str) -> set[str]:
     return out
 
 
-def free_names(node: Any, grammar: Grammar, ns: str) -> set[str]:
+def free_names(
+    node: Any,
+    grammar: Grammar,
+    ns: str,
+    *,
+    scopes: Mapping[str, tuple[Scope, ...]] | None = None,
+) -> set[str]:
     """Names `node` uses without introducing.
 
-    An approximation that ignores where a binding takes effect, so a name both
-    bound and used in `node` counts as bound. That is the safe direction for
-    capture checking: it never reports a free name that is not one.
+    Without `scopes`, `node` counts as one scope, so a name bound anywhere in
+    it is bound everywhere. That can miss a free name, which is the unsafe
+    direction for a capture check: the first `t` of `t + sum(t for t in xs)`
+    is free, and moving the expression under a binder of `t` captures it.
+
+    With `scopes` the answer is exact: a name is free where a `Name` uses it
+    outside every region of `node` that binds it. That needs Python's `Name`,
+    as substitution does.
     """
-    return all_names(node, grammar) - bound_here(node, grammar, ns)
+    if scopes is None:
+        return all_names(node, grammar) - bound_here(node, grammar, ns)
+    shadows = shadowed_at(node, grammar, ns, scopes)
+    top = {
+        name
+        for child in _as_node_list(node)
+        for name in binds_in_scope(child, grammar, ns, scopes)
+    }
+    binders = binding_occurrences(node, grammar, ns)
+    return {
+        sub.id
+        for sub in _walk_py(node)
+        if isinstance(sub, ast.Name)
+        and id(sub) not in binders
+        and sub.id not in top
+        and sub.id not in shadows.get(id(sub), frozenset())
+    }
 
 
 # ------------------------------------------------------------------- renaming
@@ -285,6 +319,10 @@ def shadowed_at(
     fields and nowhere else, which is why this cannot be a flat set. A
     function's parameters shadow inside its body, and its decorators are
     evaluated outside where they do not.
+
+    What a scope binds stops at the scopes nested in it. The `v` of
+    `lambda: [v for v in xs] + [v]` belongs to the comprehension, and counting
+    it as the lambda's hid the lambda's own free `v` from substitution.
     """
     out: dict[int, frozenset[str]] = {}
 
@@ -303,9 +341,8 @@ def shadowed_at(
             deeper = shadowed | frozenset(
                 name
                 for f in inside
-                for name in bound_here(
-                    _as_node_list(getattr(current, f, None)), grammar, ns
-                )
+                for child in _as_node_list(getattr(current, f, None))
+                for name in binds_in_scope(child, grammar, ns, scopes)
             )
         for fname in current._fields:
             walk(getattr(current, fname, None), deeper if fname in inside else shadowed)
@@ -348,7 +385,9 @@ def substitute(
       capture that name.
 
     With `fresh`, the second is repaired by renaming the offending binders. The
-    first is always refused.
+    first is always refused. A repair renames a name where the binding that
+    captures gives it its meaning, which takes `scopes` to know; without it the
+    tree counts as one scope and the name is renamed throughout.
 
     With `scopes`, shadowing stops counting as rebinding: a name bound by an
     inner scope hides the outer one inside that scope and is left alone there,
@@ -371,7 +410,7 @@ def substitute(
 
     incoming: set[str] = set()
     for value in mapping.values():
-        incoming |= free_names(value, grammar, ns)
+        incoming |= free_names(value, grammar, ns, scopes=scopes)
     captured = incoming & bound_here(out, grammar, ns)
     if captured:
         if fresh is None:
@@ -379,7 +418,13 @@ def substitute(
                 f"substituting would capture {sorted(captured)}; pass `fresh` "
                 "to rename the binders instead"
             )
-        rename(out, {n: fresh() for n in sorted(captured)}, grammar, ns)
+        renames = {n: fresh() for n in sorted(captured)}
+        if scopes is None:
+            rename(out, renames, grammar, ns)
+        else:
+            _rename_where_bound(
+                out, renames, grammar, ns, scopes=scopes, shadows=shadows
+            )
 
     binders = binding_occurrences(out, grammar, ns)
     _replace_uses(out, mapping, binders, shadows)
@@ -387,6 +432,40 @@ def substitute(
     # to be swapped by. Substituting into a bare name silently did nothing
     # until prescrypt-ng lowered `[n for n, _ in pairs]` and got `n` back.
     return _swap(out, mapping, binders, shadows)
+
+
+def _rename_where_bound(
+    node: Any,
+    mapping: Mapping[str, str],
+    grammar: Grammar,
+    ns: str,
+    *,
+    scopes: Mapping[str, tuple[Scope, ...]],
+    shadows: Mapping[int, frozenset[str]],
+) -> None:
+    """Rename a name only where a binding inside `node` gives it its meaning.
+
+    That is under a region of `node` that binds it, or anywhere when `node`
+    binds it at its own level, in the scope it will be placed into. Elsewhere
+    the name is free and means what the replacement's free names mean, so
+    renaming it with its captor cut it loose: `v + sum(v * z for v in xs)` with
+    `z := v` came out as `_t1 + sum(_t1 * v for _t1 in xs)`.
+    """
+    top = {
+        name
+        for child in _as_node_list(node)
+        for name in binds_in_scope(child, grammar, ns, scopes)
+    }
+    idents = grammar.ident_slots(ns)
+    references = grammar.reference_slots(ns)
+    for sub in walk(node, grammar):
+        prod = grammar.productions.get(type(sub).__name__)
+        if prod is None:
+            continue
+        bound = top | shadows.get(id(sub), frozenset())
+        here = {old: new for old, new in mapping.items() if old in bound}
+        _rename_idents(sub, prod, idents.get(prod.name, ()), here)
+        _rename_references(sub, references.get(prod.name, ()), here)
 
 
 def _bound_unshadowed(

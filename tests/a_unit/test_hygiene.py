@@ -206,6 +206,52 @@ def test_every_binding_region_hides_its_own_name(source: str, expected: str) -> 
     assert _sub_scoped(source, {"x": "99"}) == expected
 
 
+def test_a_nested_scope_hides_a_name_only_inside_itself() -> None:
+    """The comprehension binds `v` and the lambda around it does not, so the
+    lambda's own `v` is free. Counting the comprehension's binding as the
+    lambda's left that `v` unreplaced."""
+    source = "f = lambda: [v for v in xs] + [v]"
+    assert _sub_scoped(source, {"v": "99"}) == "f = lambda: [v for v in xs] + [99]"
+
+
+@pytest.mark.parametrize(
+    ("source", "expected"),
+    [
+        ("v + sum(v * z for v in xs)", "v + sum((_h1 * v for _h1 in xs))"),
+        (
+            "def g(v):\n    return v + z\nw = v",
+            "def g(_h1):\n    return _h1 + v\nw = v",
+        ),
+    ],
+)
+def test_a_repair_renames_only_where_the_captor_binds(
+    source: str, expected: str
+) -> None:
+    """A `v` outside the captor's scope is free, like the `v` coming in, and
+    renaming it too cut it loose: `_h1 + sum(_h1 * v for _h1 in xs)`."""
+    assert _sub_scoped(source, {"z": "v"}, fresh=Fresh("_h")) == expected
+
+
+def test_scopes_find_a_name_free_beside_its_own_binding() -> None:
+    """The first `t` is free and the generator's is not. Without a scope table
+    the expression counts as one scope, where `t` is bound everywhere."""
+    from astero.python import BINDING_SCOPES
+
+    expr = _expr("t + sum(t for t in xs)")
+    assert free_names(expr, PY, VARS) == {"sum", "xs"}
+    assert free_names(expr, PY, VARS, scopes=BINDING_SCOPES) == {"t", "sum", "xs"}
+
+
+def test_a_name_free_beside_its_own_binding_is_not_captured() -> None:
+    """Counting that `t` as bound let `g`'s parameter capture it."""
+    out = _sub_scoped(
+        "def g(t):\n    return t + z",
+        {"z": "t + sum(t for t in xs)"},
+        fresh=Fresh("_h"),
+    )
+    assert out == "def g(_h1):\n    return _h1 + (t + sum((t for t in xs)))"
+
+
 def test_a_real_rebinding_is_still_refused() -> None:
     """Shadowing hides a name. Assignment changes it, which is different."""
     with pytest.raises(CaptureError, match="binds"):

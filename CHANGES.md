@@ -2,6 +2,18 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-09-24
+
+### Fixed
+
+- `hygiene.substitute` with `scopes=` and `fresh=` repaired a capture by renaming the captured name throughout the tree, free uses included: `v + sum(v * z for v in xs)` with `z := v` came out as `_t1 + sum(_t1 * v for _t1 in xs)`. It now renames only where the capturing binding applies.
+- `hygiene.shadowed_at` counted a name bound in a nested scope as bound by every scope around it, so `substitute` with `scopes=` left the lambda's own free `v` in `lambda: [v for v in xs] + [v]` unreplaced.
+- `hygiene.substitute` with `scopes=` missed a capture when the incoming expression used a name beside its own binding of it: `t + sum(t for t in xs)` moved under a binder of `t` had its first `t` captured.
+
+### Added
+
+- `hygiene.free_names(..., scopes=)`: with a scope table, the exact free names, which is what `substitute` now checks for capture. Without one the tree still counts as one scope, which can miss a free name.
+
 ## [0.2.0] - 2026-09-01
 
 ### Added

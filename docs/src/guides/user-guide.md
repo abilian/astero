@@ -138,7 +138,7 @@ They agreed until Python 3.12, when PEP 709 stopped comprehensions opening a `sy
 ```python
 substitute(node, mapping, grammar, ns, *, scopes=…, fresh=…)
 rename(node, mapping, grammar, ns)
-free_names(node, grammar, ns) -> set[str]
+free_names(node, grammar, ns, *, scopes=…) -> set[str]
 bound_here(node, grammar, ns) -> set[str]
 Fresh(prefix="_t")             # a supply of unused names
 Fresh.avoiding(node, grammar)  # ... that avoids everything in a tree
@@ -151,6 +151,8 @@ Fresh.avoiding(node, grammar)  # ... that avoids everything in a tree
 3. **Avoids capture**, given `fresh=`. If the expression you are inserting has a free name that some binder inside the target would capture, `substitute` renames that binder first.
 
 `rename` is the simpler operation: change variables' names throughout, in every declared slot including the ones you would forget.
+
+`free_names` without `scopes` treats the tree as one scope, so the first `t` of `t + sum(t for t in xs)` does not count as free. Pass `scopes=BINDING_SCOPES` when the answer decides whether moving code captures a name, as `substitute` does.
 
 Use these when inlining a function, instantiating a macro or template, or specialising a body, anywhere an expression written in one scope is moved into another.
 
