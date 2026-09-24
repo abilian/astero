@@ -62,4 +62,4 @@ One slot, two roles, decided by a sibling: a declaring assignment defines its ta
 
 ## What roles do not say
 
-Roles are structural. They say nothing about types, effects, costs, or whether an operand is provably constant. Those are properties of a *program*, not of its grammar, so `emit_rules` guards stop at the same line.
+Roles are structural. They say nothing about types, effects, costs, or whether an operand is provably constant. Those are properties of a *program*. A grammar cannot state them, so `emit_rules` guards stop at the same line.

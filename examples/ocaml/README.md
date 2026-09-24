@@ -2,7 +2,7 @@
 
 caml-prépa is a compiler for the OCaml subset taught in French preparatory classes: `let rec`, pattern matching, lists, arrays, records, sum types, references, loops, exceptions, and `Printf`. It runs your programme, tells you the types it inferred, shows you which definition each name refers to, and turns the programme into Python.
 
-It is laid out the way a compiler course lays one out: a `front` end that turns text into a tree, a `middle` end that works out what the tree means, and two `back` ends that run it. It is also the largest worked example of [astero](../../), which derives its name resolution from a short declaration; [the last part of this file](#for-compiler-writers) is about that.
+It is laid out the way a compiler course lays one out: a `front` end that turns text into a tree, a `middle` end that works out what the tree means, and two `back` ends that run it. It is also the largest worked example of [astero](https://astero.lab.abilian.com/), which derives its name resolution from a short declaration; [the last part of this file](#for-compiler-writers) is about that.
 
 ## Documentation
 
@@ -161,7 +161,7 @@ The sources are a package under `src/`. A directory of loose modules on `sys.pat
 
 ## For compiler writers
 
-This example exists to exercise astero on a language that is not Python.
+This example exists to exercise [astero](https://astero.lab.abilian.com/) on a language that is not Python.
 
 `middle/grammar.py` is the whole declaration: sixteen roles, five namespaces and five scope layers. Everything the compiler asks about names is a query against it, and `middle/analyze.py` names no construct and lists no binding field.
 

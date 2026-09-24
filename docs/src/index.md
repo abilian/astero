@@ -2,15 +2,15 @@
 
 **The middle end, without writing it.**
 
-Parser generators took the front end fifty years ago; nobody hand-writes a lexer any more. The middle never got the same treatment. Every compiler and every analyser still rolls its own symbol table, binder, renamer, fresh-name supply, capture-avoiding substitution and bracketing, each working out the same facts about the language to do it.
+Parser generators took the front end fifty years ago; lexers are no longer written by hand. The middle never got the same treatment. Every compiler and every analyser still rolls its own symbol table, binder, renamer, fresh-name supply, capture-avoiding substitution and bracketing, each working out the same facts about the language to do it.
 
 You declare which positions bind a name, which read one, and which open a scope. The passes above follow from that. For Python you declare nothing, because the grammar ships with the library.
 
 The library ships the part that costs weeks to find out. That comprehensions stopped opening a scope in 3.12. That PEP 695 blocks are spelled `type parameter` on 3.12 and `type parameters` from 3.13. That 3.14 adds annotation blocks unless the module carries `from __future__ import annotations`. You find each one by hitting it, bisecting it, and reading a PEP.
 
-That claim is narrower than it sounds. astero does not parse, and does not replace `ast`. CPython already declares the shape of every node, and astero reads that declaration: `Assign.targets` is `list[expr]`, `Assign.value` is `expr`, and both come from the interpreter.
+That claim is narrower than it sounds. astero does not parse, and does not replace `ast`. CPython already declares the shape of every node, which astero reads: `Assign.targets` is `list[expr]` and `Assign.value` is `expr`, both straight from the interpreter.
 
-`ast` cannot tell you that the first of those two introduces a name and the second does not. To `ast` they are both `expr`. That fact lives in the language reference and in the head of whoever writes the pass, and it is what astero ships: of Python's 176 fields across 124 productions on 3.13, 138 are plain subtrees with nothing to say, and the other 38 carry a **role**. Those counts move with the language (3.11 has 163 fields and 3.15 has 183), which is why astero reads them off the interpreter. Twenty-two of them introduce a variable name.
+`ast` cannot tell you that the first of those two introduces a name and the second does not. To `ast` they are both `expr`. That fact lives in the language reference and in the head of whoever writes the pass. astero ships it: of Python's 176 fields across 124 productions on 3.13, 138 are plain subtrees with nothing to say, while the other 38 carry a **role**. Those counts move with the language (3.11 has 163 fields and 3.15 has 183), which is why astero reads them off the interpreter. Twenty-two of them introduce a variable name.
 
 ```bash
 pip install abilian-astero        # or: uv add abilian-astero
@@ -79,7 +79,7 @@ def f(y):
     return y
 ```
 
-**Sixteen identifier slots**, across fifteen productions, hold a bare variable name; **twenty-two positions** introduce one, counting the targets that hold an expression rather than a name. The sets move between releases: PEP 695 added three slots and four positions in 3.12. `rename` reaches all of them because a declaration lists them.
+**Sixteen identifier slots**, across fifteen productions, hold a bare variable name; **twenty-two positions** introduce one, counting the targets that hold an expression, such as `a[i]`. The sets move between releases: PEP 695 added three slots and four positions in 3.12. `rename` reaches all of them because a declaration lists them.
 
 ## Why that generalises
 
@@ -113,7 +113,7 @@ What reads it:
 | `emit_rules` | a code generator written as templates, bracketed from a precedence table |
 | `coverage` | a test that fails when your dispatch table misses a production |
 
-Three worked compilers ship with the docs. [TinyPy](tutorial.md) is a Python subset with two back ends. [PL/0](tutorial-pl0.md) is Wirth's textbook language, built on a tree of plain dataclasses with no relationship to `ast`. [caml-prépa](caml/index.md) is a compiler for the OCaml subset taught in French preparatory classes. It pushes hardest on the declaration: five namespaces where Python has one and a half, binding positions that are whole patterns rather than single identifier fields, and a reference implementation to check every answer against.
+Three worked compilers ship with the docs. [TinyPy](tutorial.md) is a Python subset with two back ends. [PL/0](tutorial-pl0.md) is Wirth's textbook language, built on a tree of plain dataclasses with no relationship to `ast`. [caml-prépa](caml/index.md) is a compiler for the OCaml subset taught in French preparatory classes. It pushes hardest on the declaration, with five namespaces where Python has one and a half and binding positions that are whole patterns. It also has a reference implementation to check every answer against.
 
 ## What astero is not
 
@@ -235,7 +235,7 @@ sorted(cover.missing)[:3]  # ['Assert', 'AsyncFor', 'AsyncFunctionDef']
 
 `dispatch` compares the productions your `singledispatch` registries handle against the productions the grammar declares. In a real project you would `assert not cover.missing, cover.explain()` in a test.
 
-`accounted` names the productions you choose not to handle, with the reason as the key. A stale reason, one whose production no longer exists or has since gained a handler, shows up in `cover.absent` and `cover.redundant`, not in `cover.missing`.
+`accounted` names the productions you choose not to handle, with the reason as the key. A stale reason, one whose production no longer exists or has since gained a handler, shows up in `cover.absent` and `cover.redundant`; it never reaches `cover.missing`.
 
 ## Where variable names appear in Python's AST
 

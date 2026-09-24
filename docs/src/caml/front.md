@@ -17,7 +17,7 @@ A compiler does not work on characters. The first thing it does is chop the text
 
 Two of OCaml's rules need real code, which is why the lexer is a file of its own.
 
-**Comments nest.** `(* a (* b *) c *)` is one comment, not a comment ending at the first `*)`. No regular expression can say that, so `skip_comment` counts the pairs.
+**Comments nest.** `(* a (* b *) c *)` is one comment, which does not end at the first `*)`. No regular expression can say that, so `skip_comment` counts the pairs.
 
 **`'a'` is a character and `'a` is a type variable.** They start the same way. The fix is one ordered choice: try the character pattern first, because a character literal always has a closing quote and a type variable never does.
 
@@ -41,7 +41,7 @@ def many(parser): ...       # as many as there are
 def opt(parser): ...        # one, or none
 ```
 
-This style is called **PEG**, for *parsing expression grammar*, and it has two properties that matter here. `alt` tries its alternatives **in order** and takes the first that works. `many` is **greedy** and takes as much as it can.
+This style is called **PEG**, for *parsing expression grammar*. Two of its properties matter here. `alt` tries its alternatives **in order** and takes the first that works. `many` is **greedy** and takes as much as it can.
 
 Those two properties are why OCaml suits it. The language is full of forms that run as far to the right as they can:
 
@@ -82,7 +82,7 @@ LEVELS: tuple[tuple[tuple[str, ...], str], ...] = (
 )
 ```
 
-Loosest first. `_level` turns one row into one rule, and the cascade is built by folding over the table. Add an operator to a row and the parser has it.
+Loosest first. `_level` turns one row into one rule; the cascade is built by folding over the table. Add an operator to a row and the parser has it.
 
 The table is used a second time, on the way out.
 

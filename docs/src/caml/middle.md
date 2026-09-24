@@ -60,7 +60,7 @@ binds_in_scope(child, ...) # what this subtree contributes to the scope around i
 
 Out of that comes the whole Names view, the unbound-name check, and capture-avoiding renaming. A compiler that wrote those lists out by hand would have four copies to keep in step.
 
-A scope layer names the fields evaluated *inside* the scope its production opens, so the resolver walks with two environments and picks per field. That one rule is what puts a `match` arm's pattern inside the arm, a `for` loop's index inside the loop, and a function's parameters inside the function while its name stays outside.
+A scope layer names the fields evaluated *inside* the scope its production opens, so the resolver walks with two environments and picks per field. That one rule puts a `match` arm's pattern inside the arm and a `for` loop's index inside the loop. It also puts a function's parameters inside the function while its name stays outside.
 
 ### Five namespaces
 
@@ -92,17 +92,17 @@ Two things this declaration cannot say, both found by running it.
 
 The first draft of the specification proposed exactly that condition. Writing the resolver showed it changes only whether the names *also* leak outward, which is a second defect.
 
-**A bare identifier on a scope-opening production always binds outside it.** That is what Python needs for `def f`, where the name belongs to the enclosing scope. OCaml's `for i = a to b do ... done` needs the opposite, so `For.var` holds a `PVar` node rather than a plain string: a node can be routed into the scope, a string cannot.
+**A bare identifier on a scope-opening production always binds outside it.** That is what Python needs for `def f`, where the name belongs to the enclosing scope. OCaml's `for i = a to b do ... done` needs the opposite, so `For.var` holds a `PVar` node: a node can be routed into the scope, a plain string cannot.
 
 Both are recorded in `examples/ocaml/README.md`, with the candidate fixes.
 
 ## Types, by hand
 
-`middle/` has three files for inference, and astero contributes nothing to any of them. Its own plan marks type inference as the one front-end job it does not do, and these files are the measurement of what that costs.
+`middle/` has three files for inference, and astero contributes nothing to any of them. Its own plan marks type inference as the one front-end job it does not do; these files measure what that costs.
 
 ### unify.py: what a type is
 
-The compiler is never told that `fact` takes an `int`. It works that out, by **unification**: start with an unknown, and every time the programme uses a value, insist that its type matches how it was used. `n <= 1` says `n` is comparable to an `int`, so the unknown standing for `n` becomes `int`.
+The compiler is never told that `fact` takes an `int`. It works that out, by **unification**: start with an unknown; every time the programme uses a value, insist that its type matches how it was used. `n <= 1` says `n` is comparable to an `int`, so the unknown standing for `n` becomes `int`.
 
 A type is one of two things. A `Var` is an unknown, which may later turn out to be something. A `Con` is a type constructor applied to arguments: `int` is `Con("int")`, `int list` is `Con("list", (int,))`, a function is `Con("->", (a, b))`, a tuple is `Con("*", ...)`. One shape for everything.
 
@@ -118,7 +118,7 @@ A type is one of two things. A `Var` is an unknown, which may later turn out to 
 
 It is a middle-end file because which names are in scope is settled before anything runs. `back/runtime.py` supplies a *value* for each of them; a test holds the two lists equal so neither can grow an entry the other lacks.
 
-That test found a defect: `::` was in the parser's operator table, so `( :: )` parsed to a name no environment could ever supply. It is a constructor, not an operator, and OCaml says the same.
+That test found a defect: `::` was in the parser's operator table, so `( :: )` parsed to a name no environment could ever supply. It is a constructor, as OCaml says too.
 
 ### infer.py: one rule per node
 

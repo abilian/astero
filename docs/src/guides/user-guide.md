@@ -83,7 +83,7 @@ rules("""
 """)
 ```
 
-Extra positional arguments are `Rule` objects, not more patterns. Passing a second pattern *string* is not rejected; it reaches the `Pass` unparsed and fails there.
+Extra positional arguments are `Rule` objects; only the first argument is text. Passing a second pattern *string* is not rejected; it reaches the `Pass` unparsed and fails there.
 
 A `Pass` is callable: `new_tree = MY_PASS(tree)`.
 
@@ -166,7 +166,7 @@ visitors(*classes) -> frozenset[str]        # from `visit_X` method names
 
 A `Coverage` has `.missing`, `.absent`, `.redundant` and `.explain()`. Assert `not cover.missing` in a test.
 
-Three readers cover the three ways a consumer enumerates a language. `handlers` reads `singledispatch` registries. `match_arms` parses the function's own source with `ast` and collects its `case` patterns, which is the only way to inspect a `match` statement, since it leaves no registry behind. `visitors` reads the `visit_<Production>` method names of an `ast.NodeVisitor`.
+Three readers cover the three ways a consumer enumerates a language. `handlers` reads `singledispatch` registries. `match_arms` parses the dispatcher's own source with `ast` and collects its `case` patterns, which is the only way to inspect a `match` statement, since it leaves no registry behind. `visitors` reads the `visit_<Production>` method names of an `ast.NodeVisitor`.
 
 `visitors` reads each class's own methods along the MRO, and `dir()` is the wrong tool for it. `ast.NodeVisitor` defined `visit_Constant` through Python 3.13 and CPython dropped it in 3.14, so `dir()` reports a subclass as handling `Constant` on one interpreter and not the next, whether or not anyone wrote the method.
 
@@ -234,7 +234,7 @@ family.holes()                 # cells deliberately left empty
 family.check()                 # problems in the declaration
 ```
 
-For an operation-by-type matrix: which runtime symbol implements a given operation on a given pair of types. `matrix` is the table as text, and `normalize` states once that (say) a `Bool` is looked up as an `Int64`. A cell written as a hole stays a hole, instead of becoming a missing key at run time.
+For an operation-by-type matrix: which runtime symbol implements a given operation on a given pair of types. `matrix` is the table as text, and `normalize` states once that (say) a `Bool` is looked up as an `Int64`. A cell written as a hole stays a hole; it never becomes a missing key at run time.
 
 This is the one module that derives nothing from a grammar. It exists for the tables no grammar determines.
 

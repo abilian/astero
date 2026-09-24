@@ -8,7 +8,7 @@
 | `scopes` | the scope tree, and the names each block binds |
 | `hygiene` | capture-avoiding substitution, renaming across every declared slot, fresh-name supplies |
 | `coverage` | what a dispatch table covers of a grammar, and what it misses |
-| `emit` | the document tree, the renderer, and the bracketing rule; it holds no operator table, so it knows no language |
+| `emit` | the document tree, the renderer and the bracketing rule; with no operator table of its own, it knows no language |
 | `astero.python.precedence` | Python's operator table, and the three questions that read it |
 | `astero.python.emit` | a Python expression emitter whose brackets come from that table |
 | `emit_rules` | a code generator written as guarded templates over the grammar |

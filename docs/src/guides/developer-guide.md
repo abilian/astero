@@ -21,7 +21,7 @@ nox -s tests                    # 3.11 through 3.15
 nox -s tests -p 3.15            # one of them
 ```
 
-The session passes its Python to `uv sync`. Without that, `uv` reads `.python-version`, rebuilds the virtualenv nox just made, and every entry in the matrix runs 3.12 while reporting the version you asked for. A green matrix then means one interpreter passed five times.
+The session passes its Python to `uv sync`. Without that, `uv` reads `.python-version`, rebuilds the virtualenv nox just made. Every entry in the matrix then runs 3.12 while reporting the version you asked for. A green matrix then means one interpreter passed five times.
 
 These are the version differences that bite:
 

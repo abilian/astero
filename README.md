@@ -2,11 +2,11 @@
 
 **The middle end, without writing it.**
 
-Parser generators took the front end fifty years ago; nobody hand-writes a lexer any more. The middle never got the same treatment. Every compiler and every analyser still rolls its own symbol table, binder, renamer, fresh-name supply, capture-avoiding substitution and bracketing, and each one works out the same facts about the language to do it.
+Parser generators took the front end fifty years ago; lexers are no longer written by hand. The middle never got the same treatment. Every compiler and every analyser still rolls its own symbol table, binder, renamer, fresh-name supply, capture-avoiding substitution and bracketing, each working out the same facts about the language to do it.
 
 You declare which positions bind a name, which read one, and which open a scope. The passes above follow from that. For Python you declare nothing, because the grammar ships with the library.
 
-What ships with it is the part that costs weeks to find out rather than the part that costs an afternoon to type. That comprehensions stopped opening a scope in 3.12. That PEP 695 blocks are spelled `type parameter` on 3.12 and `type parameters` from 3.13. That 3.14 adds annotation blocks unless the module carries `from __future__ import annotations`. Nobody designs that; you hit it, bisect it, and read a PEP.
+The library ships the part that costs weeks to find out. That comprehensions stopped opening a scope in 3.12. That PEP 695 blocks are spelled `type parameter` on 3.12 and `type parameters` from 3.13. That 3.14 adds annotation blocks unless the module carries `from __future__ import annotations`. You find each one by hitting it, bisecting it, and reading a PEP.
 
 ```bash
 pip install abilian-astero        # or: uv add abilian-astero
@@ -34,9 +34,9 @@ def f(x):                      # a parameter
     return [x for x in xs]     # a comprehension target
 ```
 
-A renamer written with `ast.NodeTransformer` and a `visit_Name` method reaches one. That is not a hypothetical: it is the shape of a defect found in three separate compilers, and none of the three crashed. One never bound `**kwargs`, one inlined a function so that `[99 for 99 in xs]` came out, one set an assignment context by hand and produced JavaScript that computed `NaN` where Python gave `5`.
+A renamer written with `ast.NodeTransformer` and a `visit_Name` method reaches one. That is not a hypothetical: it is the shape of a defect found in three separate compilers. None of the three crashed. One never bound `**kwargs`, one inlined a call so that `[99 for 99 in xs]` came out, one set an assignment context by hand and produced JavaScript that computed `NaN` where Python gave `5`.
 
-With astero the list is a query, and the same query serves every pass that needs it:
+With astero the list is a query, which serves every pass that needs it:
 
 ```python
 from astero.python.hygiene import rename
@@ -45,13 +45,13 @@ from astero.python import PY, VARS
 rename(tree, {"x": "y"}, PY, VARS)      # reaches all of them
 ```
 
-The set changes between Python releases: 3.12 added four positions with PEP 695. Code written against the query follows the language without being edited.
+Python releases change the set: PEP 695 added four positions in 3.12. Code written against the query follows the language without being edited.
 
 ## What it is not
 
-astero does not parse, and does not replace `ast`. CPython already declares the shape of every node, and astero reads that declaration rather than restating it: `Assign.targets` is `list[expr]`, `Assign.value` is `expr`, and both come from the interpreter.
+astero does not parse, and does not replace `ast`. CPython already declares the shape of every node, which astero reads: `Assign.targets` is `list[expr]` and `Assign.value` is `expr`, both straight from the interpreter.
 
-What `ast` cannot tell you is that the first of those two introduces a name and the second does not. To `ast` they are both `expr`. That fact lives in the language reference and in the head of whoever writes the pass, and it is what astero ships: of Python's 176 fields across 124 productions on 3.13, 138 are plain subtrees with nothing to say, and the other 38 carry a **role**. Those counts move with the language: 3.11 has 163 fields and 3.15 has 183. That is the reason to read them off the interpreter instead of writing them down.
+`ast` cannot tell you that the first of those two introduces a name and the second does not. To `ast` they are both `expr`. That fact lives in the language reference and in the head of whoever writes the pass. astero ships it: of Python's 176 fields across 124 productions on 3.13, 138 are plain subtrees with nothing to say, while the other 38 carry a **role**. Those counts move with the language (3.11 has 163 fields and 3.15 has 183), which is why astero reads them off the interpreter.
 
 ## What you get
 
@@ -66,7 +66,7 @@ Declare a **role** for each field of each production: whether it introduces a na
 | `emit_rules` | a code generator written as templates, with brackets derived from a precedence table |
 | `coverage` | a test that fails when your dispatch table misses a production |
 
-Add a binding form to your language, edit the declaration, and all six follow.
+Add a binding form to your language and edit the declaration: all six follow.
 
 ### Rewriting, without touching contexts
 
@@ -83,7 +83,7 @@ fold = Pass("fold", rules("""
 
 Identifiers spelled `_name` are metavariables, `_` matches anything without binding, and `*_xs` splices the rest of a list. Rules never mention `ctx` or source positions, because both are recomputed from the shape of the result. That is what makes the `AugAssign` defect above impossible to write.
 
-### Your own IR, not just Python's
+### Your own IR, as well as Python's
 
 A grammar carries each production's constructor, so a rewrite builds your node classes. If your AST is generated from CPython's, the whole declaration is one line:
 
@@ -104,16 +104,16 @@ Every derivation is compared against an independent source of truth, over the wh
 | emitted source | reparsing the emitted text | 1,797 modules, 2,266,043 expressions |
 | operand positions of an SSA IR | that compiler's own declaration | exact match |
 
-For assignment contexts that is ten authored role entries reconstructing all 1,457,931 positions across the 1,761 files of the 3.13 standard library. The tests hold the ratio, not the number. A regression fails; an improvement does not have to be chased.
+For assignment contexts that is ten authored role entries reconstructing all 1,457,931 positions across the 1,761 files of the 3.13 standard library. The tests hold the ratio as measured. A regression fails; an improvement does not have to be chased.
 
-The rewrite engine was first validated by reimplementing all six of [latexify_py](https://github.com/google/latexify_py)'s tree transformations as rule sets. Differential testing against the originals found 121 output differences, **every one a latent bug in the hand-written version**.
+The rewrite engine was first validated by reimplementing all six of [latexify_py](https://github.com/google/latexify_py)'s tree transformations as rule sets. Differential testing against the originals found 121 output differences, each of them a latent bug in the hand-written version.
 
 Three compilers are built on it: a Python-to-C compiler, a Python-to-WebAssembly compiler, and a Python-to-JavaScript transpiler.
 
 ## What astero is not
 
 - **Not a parser.** Bring your own AST. astero starts from a tree.
-- **Not a code generator you run.** Nothing is written to disk, and there is no build step. Every entry point is a function call at run time.
+- **Not a code generator you run.** Nothing is written to disk; there is no build step. Every entry point is a function call at run time.
 - **Not a framework.** It does not own your pipeline, your IR, or your `main`. Adopt one query in one function and leave the rest alone.
 
 Lowering and cost models stay yours. astero answers questions about a declaration; it does not decide what your compiler should do with the answers.
@@ -129,7 +129,7 @@ Lowering and cost models stay yours. astero answers questions about a declaratio
 
 ## Status
 
-Version 0.2.x. The API may still change between minor versions; the changelog says what moved. 0.2.0 split the package by language: everything Python-specific is under `astero.python`, and there are no shims. Every derivation is checked against CPython on five interpreters, and three compilers are built on it.
+Version 0.2.x. The API may still change between minor versions; the changelog says what moved. 0.2.0 split the package by language: everything Python-specific is under `astero.python`, with no shims. Every derivation is checked against CPython on five interpreters. Three compilers are built on it.
 
 ## Development
 

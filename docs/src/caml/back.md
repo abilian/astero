@@ -18,7 +18,7 @@ Before either back end, there has to be an answer to *what is an OCaml value, in
 | `Some x`, `Leaf`, an exception | `Value(tag, args)` |
 | a function | a Python callable of one argument |
 
-Two of those are decisions. Lists are cons cells because `::` has to cost nothing and because sharing is visible: `x :: l` and `l` are the same tail, and a programme that builds a list by consing in a loop is what a student writes. `ref` gets no class of its own: in OCaml it is a record with one mutable field, over which `!`, `:=`, `incr` and `decr` are ordinary functions. The commonest programme in the corpus therefore exercises the record machinery.
+Two of those are decisions. Lists are cons cells because `::` has to cost nothing and because sharing is visible: `x :: l` and `l` are the same tail. Building a list by consing in a loop is what a student writes. `ref` gets no class of its own: in OCaml it is a record with one mutable field, over which `!`, `:=`, `incr` and `decr` are ordinary functions. The commonest programme in the corpus therefore exercises the record machinery.
 
 Both back ends use this file, which is what made the second one cheap: it cost an emitter and nothing else, because there is no second value representation and no second `List.fold_left`.
 
@@ -40,7 +40,7 @@ It also means that running a programme both ways and comparing the output is a t
             return eval_expr(otherwise, env) if otherwise is not None else None
 ```
 
-One `case` per kind of node, so you can read the whole language's behaviour in one function. It is also the reference semantics: the [specification](https://caml-prepa.lab.abilian.com/en/language/specification/#evaluation)'s *Evaluation* section is what it implements, and where the two disagree one of them is wrong.
+There is one `case` per kind of node, so you can read the whole language's behaviour in one function. This function is also the reference semantics: it implements the *Evaluation* section of the [specification](https://caml-prepa.lab.abilian.com/en/language/specification/#evaluation), and where the two disagree one of them is wrong.
 
 **A function value is a Python callable of one argument**, because OCaml functions are curried: `add 1 2` is really `(add 1) 2`. `Fun` with three parameters builds three nested closures, and partial application then falls out with no arity bookkeeping anywhere.
 
@@ -61,7 +61,7 @@ def fact(n):
 
 Three things it decides that the interpreter never has to.
 
-**Arity.** `let f x y = e` is known to take two parameters, because the tree kept them, so it becomes `def f(x, y)` and a saturated `f a b` becomes `f(a, b)` rather than `f(a)(b)`. Every other call goes through `runtime.apply`, which works out at run time how many arguments the callee wants.
+**Arity.** `let f x y = e` is known to take two parameters, because the tree kept them, so it becomes `def f(x, y)` and a saturated `f a b` becomes the direct call `f(a, b)`. Every other call goes through `runtime.apply`, which works out at run time how many arguments the callee wants.
 
 **Pattern matching.** `match` has to become a chain of tests. `back/patterns.py` produces two things from a pattern: the conditions that must hold, and where each name it binds is found. An or-pattern is expanded into separate patterns first, so the tests are always simple paths into the value.
 

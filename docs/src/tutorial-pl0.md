@@ -4,7 +4,7 @@ The [TinyPy tutorial](tutorial.md) compiles a subset of Python. That leaves one 
 
 This page answers it by compiling **PL/0**, Niklaus Wirth's teaching language and the one most compiler courses build first. PL/0 is not Python and shares nothing with it: constants, variables, nested parameterless procedures, `begin`/`end`, `if`, `while`, `call`, and integer arithmetic.
 
-The code is in `examples/pl0/`: 972 lines, 637 of them code, including a parser, a P-machine and an interpreter. The three files that talk to astero, `grammar.py`, `analyze.py` and `codegen.py`, are 313 lines of that. It differs from TinyPy in these ways:
+The code is in `examples/pl0/`: 972 lines, 637 of them code, including a parser, a P-machine and an interpreter. The three files that talk to astero, `grammar.py`, `analyze.py` and `codegen.py`, are 313 lines of that. The table below compares PL/0 with the TinyPy tutorial, row by row:
 
 | | TinyPy | PL/0 |
 | --- | --- | --- |
@@ -91,7 +91,7 @@ program   main             {n, r}
     procedure i                {}
 ```
 
-## 4. Ask the grammar, not a list of field names
+## 4. Ask the grammar for field names
 
 Slot allocation needs the declarations of a block, in source order. Nothing below names `Const`, `Var` or `Procedure`:
 
