@@ -2,6 +2,18 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2] - 2026-09-25
+
+### Added
+
+- `Scope.outside`: positions under `inside` that are evaluated in the enclosing scope, as dotted paths from the node (a field, `*` for every element of a list, or an index). Python's tables use it for a function's defaults and annotations and a comprehension's first iterable.
+- `scopes.evaluated_outside(node, layer, scopes=None)`, the nodes at a layer's `outside` positions, less any that a scope opened along the path claims; and `scopes.layer_binds(node, grammar, ns, scopes)`, the names bound in each layer a node opens.
+
+### Fixed
+
+- A function's defaults and annotations, and a comprehension's first iterable, are evaluated in the scope around it. `scope_tree` puts a lambda in a default beside its function rather than inside it, a walrus in a default binds around the function, and `binds_in_scope`, `shadowed_at`, `substitute` and `free_names` follow.
+- `hygiene.shadowed_at`, and with it `substitute` and `free_names` given `scopes=`, now follows `global`, `nonlocal` and class scope. A name declared `global` or `nonlocal` is no longer counted as bound where it is declared, so `substitute` no longer skips a use that reads the module's name, and refuses a target that assigns it. A class body's names no longer shadow inside the functions and generators nested in it.
+
 ## [0.2.1] - 2026-09-24
 
 ### Fixed

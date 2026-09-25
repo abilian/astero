@@ -24,7 +24,7 @@ from __future__ import annotations
 from collections.abc import Collection, Iterator
 from typing import Any
 
-from astero.scopes import Block, binds_in_scope, scope_tree
+from astero.scopes import Block, binds_in_scope, evaluated_outside, scope_tree
 from ocaml import syntax
 
 from .grammar import CONS, FIELDS, NAMESPACES, OCAML, SCOPES, TYPES, TYVARS, VALS
@@ -93,7 +93,7 @@ def check(structure: syntax.Structure, ns: str) -> list[str]:
     """Uses of a name in `ns` that nothing in scope declares."""
     problems: list[str] = []
     root = scope_names(structure, ("items",), ns) | PRELUDE[ns]
-    _resolve(structure, [root], ns, problems)
+    _resolve(structure, [root], ns, problems, {})
     return problems
 
 
@@ -102,11 +102,24 @@ def unbound(structure: syntax.Structure) -> list[str]:
     return [problem for ns in NAMESPACES for problem in check(structure, ns)]
 
 
-def _resolve(node: Any, visible: list[set[str]], ns: str, problems: list[str]) -> None:
+def _resolve(
+    node: Any,
+    visible: list[set[str]],
+    ns: str,
+    problems: list[str],
+    around: dict[int, list[set[str]]],
+) -> None:
+    """`around` holds what a scope evaluates outside itself, by `id()`, with
+    the names visible where it is evaluated: a `let`'s value, for one."""
+    visible = around.pop(id(node), visible)
     for name in OCAML.reads(node, ns):
         if not any(name in level for level in visible):
             problems.append(f"{type(node).__name__}: {name!r} is not declared in {ns}")
     inside = opened_fields(node)
     inner = [*visible, scope_names(node, inside, ns)] if inside else visible
+    for layer in SCOPES.get(type(node).__name__, ()):
+        if layer.applies(node):
+            for _, _, child in evaluated_outside(node, layer, SCOPES):
+                around[id(child)] = visible
     for name, child in fields_of(node):
-        _resolve(child, inner if name in inside else visible, ns, problems)
+        _resolve(child, inner if name in inside else visible, ns, problems, around)

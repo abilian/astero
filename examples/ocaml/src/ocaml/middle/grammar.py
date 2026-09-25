@@ -47,12 +47,12 @@ Two things it gets *wrong*, both found by running it, and both worth
 knowing because they are the honest edge of the idea. `README.md`, *Two residuals*,
 has the long version.
 
-1. **`let` and `let rec` look the same to this.** In OCaml a plain
+1. **`let f x = e` sees the `f` it binds.** In OCaml a plain
    `let p = e in b` evaluates `e` in the scope *around* the `let`, so
-   `let x = x + 1 in ...` reads the outer `x`. Saying that needs a
-   binding's pattern routed inside the new scope and its value routed
-   outside, and both live in the same field of `LetIn`. `Scope.inside`
-   names a field, so it can put both in or both out and nothing else.
+   `let x = x + 1 in ...` reads the outer `x`. The pattern is inside the
+   new scope and the value is not, both in one field of `LetIn`, and
+   `Scope.outside` names the value. With parameters, though, `e` belongs
+   to the scope the parameters open, and that scope sits inside the `let`.
 
 2. **A bare identifier on a scope-opening production always binds
    outside it**, which is what Python needs for `def f`. OCaml's
@@ -63,7 +63,7 @@ has the long version.
 
 from __future__ import annotations
 
-from astero.grammar import Present, defines, defuse, from_dataclasses, uses
+from astero.grammar import Absent, Present, defines, defuse, from_dataclasses, uses
 from astero.scopes import Scope
 from ocaml import syntax
 
@@ -133,8 +133,16 @@ SCOPES: dict[str, tuple[Scope, ...]] = {
     # binds `x` over it, so it does.
     "Binding": (Scope("binding", inside=("params", "value"), when=Present("params")),),
     "For": (Scope("for", inside=("var", "body")),),
-    # One layer, and not two conditioned on `recursive`. Residual 1 above is
-    # why: the difference between `let` and `let rec` is not in which fields
-    # of `LetIn` are inner.
-    "LetIn": (Scope("let", inside=("bindings", "body")),),
+    # `let` computes its values in the scope around it and `let rec` in its
+    # own. The value is a grandchild, which `outside` can name; residual 1
+    # above is what it cannot.
+    "LetIn": (
+        Scope(
+            "let",
+            inside=("bindings", "body"),
+            outside=("bindings.*.value",),
+            when=Absent("recursive"),
+        ),
+        Scope("let", inside=("bindings", "body"), when=Present("recursive")),
+    ),
 }

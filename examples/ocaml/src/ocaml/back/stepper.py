@@ -39,6 +39,7 @@ from dataclasses import dataclass, field
 from types import ModuleType
 from typing import Any
 
+from astero.scopes import evaluated_outside
 from ocaml import syntax as s
 from ocaml.back import interpret, runtime
 from ocaml.back.compile import compile_source
@@ -184,14 +185,20 @@ def scope_paths(tree: s.Structure) -> dict[int, str]:
     not in the `let`. Nothing here lists a node kind; `SCOPES` does.
     """
     found: dict[int, str] = {}
+    # what a scope evaluates outside itself, with the path it is evaluated at
+    around: dict[int, tuple[str, ...]] = {}
 
     def walk(node: Any, path: tuple[str, ...]) -> None:
+        path = around.pop(id(node), path)
         found[id(node)] = " ▸ ".join(path)
         layers = [
             layer
             for layer in SCOPES.get(type(node).__name__, ())
             if layer.applies(node)
         ]
+        for layer in layers:
+            for _, _, child in evaluated_outside(node, layer, SCOPES):
+                around[id(child)] = path
         inside = analyze.opened_fields(node)
         deeper = (*path, *(layer.kind for layer in layers)) if layers else path
         for name, child in analyze.fields_of(node):

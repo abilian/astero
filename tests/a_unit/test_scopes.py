@@ -134,3 +134,44 @@ def test_it_works_over_a_grammar_that_is_not_pythons() -> None:
     )
     tree = Block(decls=[Var(name="a"), Var(name="b")])
     assert binds_in_scope(tree, grammar, "v", {}) == {"a", "b"}
+
+
+#: One of every construct an `outside` path can name.
+_EVERY_POSITION = (
+    "def f(a: A = 1, /, b: B = 2, *c: C, d: D = 3, **e: E): pass\n"
+    "async def g(a: A = 1, /, b: B = 2, *c: C, d: D = 3, **e: E): pass\n"
+    "h = lambda a=1, *, b=2: a\n"
+    "w = (i for i in xs)\n"
+    "x = [i for i in xs]\n"
+    "y = {i for i in xs}\n"
+    "z = {i: i for i in xs}\n"
+)
+
+
+def test_every_outside_path_names_a_real_position() -> None:
+    """`outside` is authored, so it is held against the parser: each path
+    must start in a field the layer holds inside, and reach a node in a tree
+    that has every construct. A misspelt field reaches nothing."""
+    from astero.python import SCOPES
+    from astero.scopes import evaluated_outside
+
+    tree = ast.parse(_EVERY_POSITION)
+    checked = 0
+    for table in (SCOPES, BINDING_SCOPES):
+        for production, layers in table.items():
+            nodes = [n for n in ast.walk(tree) if type(n).__name__ == production]
+            for layer in layers:
+                for path in layer.outside:
+                    assert path.split(".")[0] in layer.inside, f"{production}: {path}"
+                    one = dataclasses.replace(layer, outside=(path,))
+                    assert any(evaluated_outside(n, one) for n in nodes), (
+                        f"{production}: {path} reaches nothing"
+                    )
+                    checked += 1
+    assert checked >= 20
+
+
+def test_what_a_function_evaluates_outside_binds_outside() -> None:
+    """A walrus in a default binds around the function, as CPython has it."""
+    tree = ast.parse("def f(k=(y := 1)):\n    return y\n")
+    assert binds_in_scope(tree.body[0], PY, VARS, BINDING_SCOPES) == {"f", "y"}

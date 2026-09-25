@@ -48,9 +48,76 @@ class Scope:
     #: nodes ask for it. PEP 649 gives a block a single `__annotate__` for
     #: all of its annotated assignments.
     once: bool = False
+    #: Positions under `inside` evaluated in the enclosing scope all the same,
+    #: as dotted paths from the node: a field, `*` for every element of a
+    #: list, or an index. `inside` names whole fields, and a scope can split
+    #: one: a function's `args` holds parameters, which bind inside, and
+    #: defaults and annotations, which are computed where the function is
+    #: defined. A comprehension's first iterable is computed before it runs.
+    outside: tuple[str, ...] = ()
 
     def applies(self, node: ast.AST) -> bool:
         return self.when is None or self.when.holds(node)
+
+
+def evaluated_outside(
+    node: Any,
+    layer: Scope,
+    scopes: Mapping[str, tuple[Scope, ...]] | None = None,
+) -> list[tuple[Any, str, Any]]:
+    """`(parent, field, child)` at each of `layer.outside`'s positions in `node`.
+
+    A position that is absent, an unset annotation or an empty list of
+    defaults, yields nothing. Given `scopes`, neither does one that a scope
+    opened along the path claims for itself: in OCaml's `let f x = e`, `e`
+    belongs to the scope `x` binds in, whatever the `let` around it says.
+    """
+    out: list[tuple[Any, str, Any]] = []
+    for path in layer.outside:
+        *steps, last = path.split(".")
+        holders = [node]
+        for step in steps:
+            holders = [
+                item
+                for holder in holders
+                if not _claims(holder, step, node, scopes)
+                for item in _step(holder, step)
+            ]
+        for holder in holders:
+            if _claims(holder, last, node, scopes):
+                continue
+            value = getattr(holder, last, None)
+            for child in value if isinstance(value, list) else [value]:
+                if child is not None:
+                    out.append((holder, last, child))
+    return out
+
+
+def _claims(
+    holder: Any, fname: str, root: Any, scopes: Mapping[str, tuple[Scope, ...]] | None
+) -> bool:
+    """Whether a scope `holder` opens, below `root`, holds `fname` inside."""
+    if scopes is None or holder is root or isinstance(holder, list):
+        return False
+    return any(fname in layer.inside for layer in _layers(holder, scopes))
+
+
+def _step(holder: Any, step: str) -> list[Any]:
+    if step == "*":
+        return list(holder) if isinstance(holder, list) else []
+    if step.isdigit():
+        index = int(step)
+        return (
+            [holder[index]] if isinstance(holder, list) and index < len(holder) else []
+        )
+    value = getattr(holder, step, None)
+    return [] if value is None else [value]
+
+
+def _layers(node: Any, scopes: Mapping[str, tuple[Scope, ...]]) -> list[Scope]:
+    return [
+        layer for layer in scopes.get(type(node).__name__, ()) if layer.applies(node)
+    ]
 
 
 @dataclass
@@ -217,15 +284,74 @@ def binds_in_scope(
     binds `b` through a `withitem`, `import a.b as c` through an `alias`,
     `except E as err` through an `ExceptHandler`, and `case [x]` through a
     pattern. None of those are named here.
+
+    What a scope evaluates outside itself binds outside too: `def f(a=(y :=
+    1))` binds `y` around `f`.
     """
+    return _binds(node, grammar, ns, scopes, stop=frozenset(stop), cut=frozenset())
+
+
+def layer_binds(
+    node: Any,
+    grammar: Grammar,
+    ns: str,
+    scopes: Mapping[str, tuple[Scope, ...]],
+) -> list[tuple[Scope, set[str]]]:
+    """Each scope `node` opens, outermost first, with the names bound in it.
+
+    A layer's own fields, less what it evaluates outside, plus what the layer
+    inside it evaluates outside: the annotations of `def f[T](x: T)` are
+    computed in the type-parameter scope, where `T` is.
+    """
+    layers = _layers(node, scopes)
+    out: list[tuple[Scope, set[str]]] = []
+    for i, layer in enumerate(layers):
+        cut = frozenset(id(c) for _, _, c in evaluated_outside(node, layer, scopes))
+        names: set[str] = set()
+        for fname in layer.inside:
+            value = getattr(node, fname, None)
+            for child in value if isinstance(value, list) else [value]:
+                if _is_node(child, grammar) and id(child) not in cut:
+                    names |= _binds(
+                        child, grammar, ns, scopes, stop=frozenset(), cut=cut
+                    )
+        if i + 1 < len(layers):
+            for _, _, child in evaluated_outside(node, layers[i + 1], scopes):
+                if _is_node(child, grammar):
+                    names |= _binds(
+                        child, grammar, ns, scopes, stop=frozenset(), cut=frozenset()
+                    )
+        out.append((layer, names))
+    return out
+
+
+def _binds(
+    node: Any,
+    grammar: Grammar,
+    ns: str,
+    scopes: Mapping[str, tuple[Scope, ...]],
+    *,
+    stop: frozenset[str],
+    cut: frozenset[int],
+) -> set[str]:
+    """`binds_in_scope`, not entering the nodes in `cut`."""
     out = set(names_bound_by(node, grammar, ns))
-    inner = _opened_fields(node, scopes)
+    layers = _layers(node, scopes)
+    inner = {name for layer in layers for name in layer.inside}
     for name, value in _fields_of(node, grammar):
         if name in inner:
             continue
         for child in value if isinstance(value, list) else [value]:
-            if _is_node(child, grammar) and type(child).__name__ not in stop:
-                out |= binds_in_scope(child, grammar, ns, scopes, stop=stop)
+            if (
+                _is_node(child, grammar)
+                and type(child).__name__ not in stop
+                and id(child) not in cut
+            ):
+                out |= _binds(child, grammar, ns, scopes, stop=stop, cut=cut)
+    if layers:
+        for _, _, child in evaluated_outside(node, layers[0], scopes):
+            if _is_node(child, grammar):
+                out |= _binds(child, grammar, ns, scopes, stop=stop, cut=cut)
     return out
 
 
@@ -367,6 +493,10 @@ class _Resolver:
     siblings: Mapping[str, Scope] = field(default_factory=dict)
     #: Enclosing blocks that already have a `once` sibling, by kind and name.
     _placed: set[tuple[int, str, str]] = field(default_factory=set)
+    #: Nodes a layer evaluates outside itself, by `id()`, and where they go.
+    _cut: dict[int, tuple[Block, str | None]] = field(default_factory=dict)
+    #: Nodes already resolved ahead of the fields holding them.
+    _done: set[int] = field(default_factory=set)
 
     def descend(self, node: ast.AST, block: Block, owner: str | None) -> None:
         for fname, value in self.fields_of(node):
@@ -382,6 +512,9 @@ class _Resolver:
         block: Block,
         owner: str | None,
     ) -> None:
+        if id(child) in self._done:
+            return
+        block, owner = self._cut.pop(id(child), (block, owner))
         # A binding position on the parent binds whatever this child names.
         field = self._binding_field(parent, fname)
         if field is not None:
@@ -398,7 +531,13 @@ class _Resolver:
             self.place_sibling(child, block)
             self.descend(child, block, owner)
             return
+        self.open_scope(child, layers, block, owner)
 
+    def open_scope(
+        self, child: ast.AST, layers: list[Scope], block: Block, owner: str | None
+    ) -> None:
+        """Resolve a node that opens scopes, each field into the one it is
+        evaluated in."""
         # Layers nest outermost first, so a type-parameter scope encloses the
         # function scope its production also opens.
         blocks = _open_layers(child, layers, owner)
@@ -410,6 +549,7 @@ class _Resolver:
             self.place_sibling(child, blocks[-2][1], before=blocks[-1][1])
         else:
             self.place_sibling(child, block)
+        self.route_outside(child, blocks, block, owner)
         # Fields evaluated in the enclosing scope come first, because CPython
         # compiles a decorator or a default argument before the block the
         # production opens. Appending the block first put a lambda in a default
@@ -424,6 +564,29 @@ class _Resolver:
                         self.visit(sub, sub_name, child, target, target_owner)
             if not inner_pass:
                 block.children.append(blocks[0][1])
+
+    def route_outside(
+        self,
+        child: ast.AST,
+        blocks: list[tuple[Scope, Block, str | None]],
+        block: Block,
+        owner: str | None,
+    ) -> None:
+        """Send what each layer evaluates outside itself to the layer around it.
+
+        The outermost layer's go to the enclosing block, resolved now, ahead
+        of the fields around them: CPython computes a default before a
+        decorator. A deeper layer's are resolved where the walk reaches them.
+        """
+        for i, (layer, _, _) in enumerate(blocks):
+            around = (block, owner) if i == 0 else (blocks[i - 1][1], blocks[i - 1][2])
+            for holder, hname, sub in evaluated_outside(child, layer, self.scopes):
+                if not self.is_node(sub):
+                    continue
+                self._cut[id(sub)] = around
+                if i == 0:
+                    self.visit(sub, hname, holder, block, owner)
+                    self._done.add(id(sub))
 
     def place_sibling(
         self, child: ast.AST, block: Block, before: Block | None = None

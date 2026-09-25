@@ -6,9 +6,10 @@ positions are *patterns* rather than single identifier fields, and which
 keeps five namespaces apart rather than two.
 
 Writing it produced one result, and the tests below hold it: the difference
-between `let` and `let rec` is not expressible as a `Scope` layer, because
+between `let` and `let rec` was not expressible as a `Scope` layer, because
 the two fields that would have to differ belong to a grandchild of the
-production that opens the scope. `test_residual_*` are the record.
+production that opens the scope. `Scope.outside` names the grandchild now;
+`test_residual_*` record what it leaves.
 """
 
 from __future__ import annotations
@@ -482,10 +483,22 @@ def test_every_grimaud_programme_says_where_it_came_from(ocaml: Modules) -> None
 # either one fails here and gets noticed rather than passing silently.
 
 
-def test_residual_a_let_sees_the_name_it_binds(ocaml: Modules) -> None:
-    """OCaml rejects this: `let` is not `let rec`, so the `z` on the right
-    is the outer one, and there is none. `README.md`, *Two residuals*."""
-    assert ocaml["analyze"].unbound(ocaml["parse"]("let g = let z = z in z")) == []
+def test_a_let_does_not_see_the_name_it_binds(ocaml: Modules) -> None:
+    """`let` is not `let rec`, so the `z` on the right is the outer one, and
+    there is none. The non-recursive layer says so with `Scope.outside`."""
+    problems = ocaml["analyze"].unbound(ocaml["parse"]("let g = let z = z in z"))
+    assert len(problems) == 1
+    assert "'z'" in problems[0]
+    recursive = "let g = let rec f x = f x in f"
+    assert ocaml["analyze"].unbound(ocaml["parse"](recursive)) == []
+
+
+def test_residual_a_function_let_sees_the_name_it_binds(ocaml: Modules) -> None:
+    """OCaml rejects this too, and the model does not. `let f x = e` opens
+    the scope `x` binds in, and that scope sits inside the `let`, where `f`
+    is bound. `README.md`, *Two residuals*."""
+    source = "let g = let f x = f x in f"
+    assert ocaml["analyze"].unbound(ocaml["parse"](source)) == []
 
 
 def test_a_type_variable_declares_itself_and_a_declaration_checks_it(

@@ -150,19 +150,41 @@ _TYPE_PARAMS = Scope(
     when=Present("type_params"),
 )
 
+#: What a function computes where it is defined, although `args` is inside
+#: it: its defaults, and its annotations (in the type-parameter scope when it
+#: has one, which is the scope around the function's own).
+_DEFAULTS = ("args.defaults", "args.kw_defaults")
+_DEFINED_OUTSIDE = (
+    *_DEFAULTS,
+    "args.posonlyargs.*.annotation",
+    "args.args.*.annotation",
+    "args.kwonlyargs.*.annotation",
+    "args.vararg.annotation",
+    "args.kwarg.annotation",
+)
+#: A comprehension's first iterable, computed before it runs.
+_FIRST_ITERABLE = ("generators.0.iter",)
+
+_FUNCTION = Scope(
+    "function", ("args", "body"), name_field="name", outside=_DEFINED_OUTSIDE
+)
+
 #: Layers, outermost first. A layer whose condition fails does not open.
 SCOPES: dict[str, tuple[Scope, ...]] = {
-    "FunctionDef": (
-        _TYPE_PARAMS,
-        Scope("function", ("args", "body"), name_field="name"),
-    ),
-    "AsyncFunctionDef": (
-        _TYPE_PARAMS,
-        Scope("function", ("args", "body"), name_field="name"),
-    ),
+    "FunctionDef": (_TYPE_PARAMS, _FUNCTION),
+    "AsyncFunctionDef": (_TYPE_PARAMS, _FUNCTION),
     "ClassDef": (_TYPE_PARAMS, Scope("class", ("body",), name_field="name")),
-    "Lambda": (Scope("function", ("args", "body"), fixed_name=_LAMBDA),),
-    "GeneratorExp": (Scope("function", ("elt", "generators"), fixed_name=_GENEXPR),),
+    "Lambda": (
+        Scope("function", ("args", "body"), fixed_name=_LAMBDA, outside=_DEFAULTS),
+    ),
+    "GeneratorExp": (
+        Scope(
+            "function",
+            ("elt", "generators"),
+            fixed_name=_GENEXPR,
+            outside=_FIRST_ITERABLE,
+        ),
+    ),
 }
 
 if sys.version_info >= (3, 12):
@@ -173,10 +195,29 @@ if sys.version_info >= (3, 12):
 
 if _COMPREHENSIONS_ARE_SCOPES:
     SCOPES |= {
-        "ListComp": (Scope("function", ("elt", "generators"), fixed_name="listcomp"),),
-        "SetComp": (Scope("function", ("elt", "generators"), fixed_name="setcomp"),),
+        "ListComp": (
+            Scope(
+                "function",
+                ("elt", "generators"),
+                fixed_name="listcomp",
+                outside=_FIRST_ITERABLE,
+            ),
+        ),
+        "SetComp": (
+            Scope(
+                "function",
+                ("elt", "generators"),
+                fixed_name="setcomp",
+                outside=_FIRST_ITERABLE,
+            ),
+        ),
         "DictComp": (
-            Scope("function", ("key", "value", "generators"), fixed_name="dictcomp"),
+            Scope(
+                "function",
+                ("key", "value", "generators"),
+                fixed_name="dictcomp",
+                outside=_FIRST_ITERABLE,
+            ),
         ),
     }
 
@@ -237,10 +278,29 @@ def annotation_blocks(tree: ast.AST) -> dict[str, Scope]:
 #: version. A pass asking "may I replace this name here" wants the second
 #: question, so it wants this table.
 BINDING_SCOPES: dict[str, tuple[Scope, ...]] = SCOPES | {
-    "ListComp": (Scope("function", ("elt", "generators"), fixed_name="listcomp"),),
-    "SetComp": (Scope("function", ("elt", "generators"), fixed_name="setcomp"),),
+    "ListComp": (
+        Scope(
+            "function",
+            ("elt", "generators"),
+            fixed_name="listcomp",
+            outside=_FIRST_ITERABLE,
+        ),
+    ),
+    "SetComp": (
+        Scope(
+            "function",
+            ("elt", "generators"),
+            fixed_name="setcomp",
+            outside=_FIRST_ITERABLE,
+        ),
+    ),
     "DictComp": (
-        Scope("function", ("key", "value", "generators"), fixed_name="dictcomp"),
+        Scope(
+            "function",
+            ("key", "value", "generators"),
+            fixed_name="dictcomp",
+            outside=_FIRST_ITERABLE,
+        ),
     ),
 }
 

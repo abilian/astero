@@ -39,10 +39,18 @@ SCOPES: dict[str, tuple[Scope, ...]] = {
     # binds `x` over it, so it does.
     "Binding": (Scope("binding", inside=("params", "value"), when=Present("params")),),
     "For": (Scope("for", inside=("var", "body")),),
-    # One layer, and not two conditioned on `recursive`. Residual 1 above is
-    # why: the difference between `let` and `let rec` is not in which fields
-    # of `LetIn` are inner.
-    "LetIn": (Scope("let", inside=("bindings", "body")),),
+    # `let` computes its values in the scope around it and `let rec` in its
+    # own. The value is a grandchild, which `outside` can name; residual 1
+    # above is what it cannot.
+    "LetIn": (
+        Scope(
+            "let",
+            inside=("bindings", "body"),
+            outside=("bindings.*.value",),
+            when=Absent("recursive"),
+        ),
+        Scope("let", inside=("bindings", "body"), when=Present("recursive")),
+    ),
 }
 ```
 
@@ -86,11 +94,9 @@ Python needs a walk that knows its own destructuring shapes for the same job. Th
 
 ### Where it stops
 
-Two things this declaration cannot say, both found by running it.
+Two things this declaration gets wrong, both found by running it.
 
-**`let` and `let rec` look the same to it.** In OCaml a plain `let p = e in b` evaluates `e` in the scope *around* the `let`, so `let x = x + 1 in ...` reads the outer `x` and `let f = fun n -> f n` is an error. Saying that needs a binding's pattern routed inside the new scope and its value routed outside. Both live in the same field of `LetIn`. `Scope.inside` names a field, so it can put both in or both out and nothing else. A condition does not reach it either: the fields that would have to differ belong to a grandchild.
-
-The first draft of the specification proposed exactly that condition. Writing the resolver showed it changes only whether the names *also* leak outward, which is a second defect.
+**`let f x = e` sees the `f` it binds.** In OCaml a plain `let p = e in b` evaluates `e` in the scope *around* the `let`, so `let x = x + 1 in ...` reads the outer `x` and `let f = fun n -> f n` is an error. The pattern is inside the new scope and the value is not, and both live in one field of `LetIn`, a grandchild away from the production that opens the scope. `Scope.outside` names that grandchild, `"bindings.*.value"`, on the layer conditioned on `Absent("recursive")`, which is what the declaration above says. With parameters it still falls short: `let f x = e` opens a scope for `x` over `e`, that scope sits inside the `let`, and a position a nested scope claims stays with it. So `let f x = f x in ...` resolves `f`, where OCaml rejects it.
 
 **A bare identifier on a scope-opening production always binds outside it.** That is what Python needs for `def f`, where the name belongs to the enclosing scope. OCaml's `for i = a to b do ... done` needs the opposite, so `For.var` holds a `PVar` node: a node can be routed into the scope, a plain string cannot.
 

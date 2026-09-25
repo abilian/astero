@@ -320,3 +320,20 @@ def test_a_bare_name_that_is_not_in_the_mapping_is_left_alone() -> None:
     body = ast.parse("other", mode="eval").body
     out = substitute(body, {"n": ast.parse("t[0]", mode="eval").body}, PY, VARS)
     assert ast.unparse(out) == "other"
+
+
+def test_a_global_declaration_binds_nothing_where_it_is_written() -> None:
+    """`g` is the module's in `f`: a use of it is substitutable, and an
+    assignment to it rebinds the name being substituted. Counting an assigned
+    `g` as `f`'s own missed the rebinding and skipped every use beside it."""
+    reading = "def f():\n    global g\n    return g"
+    assert _sub_scoped(reading, {"g": "99"}) == "def f():\n    global g\n    return 99"
+    with pytest.raises(CaptureError, match="binds"):
+        _sub_scoped("def f():\n    global g\n    g = 1", {"g": "99"})
+
+
+def test_a_class_body_does_not_shadow_its_methods() -> None:
+    """The method's `x` is the module's: class names are not visible in it."""
+    source = "class C:\n    x = 1\n\n    def m(self):\n        return x"
+    out = _sub_scoped(source, {"x": "99"})
+    assert out.endswith("return 99")

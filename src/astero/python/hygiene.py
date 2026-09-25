@@ -36,6 +36,8 @@ from astero.scopes import (
     Scope,
     binds_in_scope,
     bound_names,
+    evaluated_outside,
+    layer_binds,
     target_nodes,
     walk,
 )
@@ -323,32 +325,84 @@ def shadowed_at(
     What a scope binds stops at the scopes nested in it. The `v` of
     `lambda: [v for v in xs] + [v]` belongs to the comprehension, and counting
     it as the lambda's hid the lambda's own free `v` from substitution.
+
+    A declared name is not the declaring scope's: `global g` and `nonlocal x`
+    bind nothing where they are written, and a `global` name is not any
+    enclosing function's either. A class body's names are visible in the body
+    and in the annotation scopes inside it, and not in a function or generator
+    nested in it: `class C: x = 1; def m(self): return x` reads the global `x`.
+    `symtable` is the oracle for all of it, in `test_scopes_symtable.py`.
     """
     out: dict[int, frozenset[str]] = {}
+    declaring = grammar.positions(Kind.DECLARE, ns)
+    #: What a layer evaluates outside itself sees the names around the layer.
+    around: dict[int, tuple[frozenset[str], frozenset[str]]] = {}
 
-    def walk(current: Any, shadowed: frozenset[str]) -> None:
+    def walk(current: Any, outer: frozenset[str], klass: frozenset[str]) -> None:
         if isinstance(current, list):
             for item in current:
-                walk(item, shadowed)
+                walk(item, outer, klass)
             return
         if not isinstance(current, ast.AST):
             return
-        out[id(current)] = shadowed
-        layers = _scope_layers(current, scopes)
-        inside = {f for layer in layers for f in layer.inside}
-        deeper = shadowed
-        if layers:
-            deeper = shadowed | frozenset(
-                name
-                for f in inside
+        outer, klass = around.pop(id(current), (outer, klass))
+        out[id(current)] = outer | klass
+        inner: dict[str, tuple[frozenset[str], frozenset[str]]] = {}
+        o, k = outer, klass
+        for layer, bound in layer_binds(current, grammar, ns, scopes):
+            for _, _, child in evaluated_outside(current, layer, scopes):
+                around[id(child)] = (o, k)
+            region = [
+                child
+                for f in layer.inside
                 for child in _as_node_list(getattr(current, f, None))
-                for name in binds_in_scope(child, grammar, ns, scopes)
-            )
+            ]
+            declared, global_ = _declared_in(region, declaring, scopes)
+            binds = frozenset(bound) - declared
+            o -= global_
+            if layer.kind == "class":
+                k = binds
+            elif layer.kind == "function":
+                o, k = o | binds, frozenset()
+            else:  # an annotation scope sees the class around it (PEP 695)
+                o |= binds
+            inner.update(dict.fromkeys(layer.inside, (o, k)))
         for fname in current._fields:
-            walk(getattr(current, fname, None), deeper if fname in inside else shadowed)
+            walk(getattr(current, fname, None), *inner.get(fname, (outer, klass)))
 
-    walk(node, frozenset())
+    walk(node, frozenset(), frozenset())
     return out
+
+
+def _declared_in(
+    region: list,
+    declaring: Mapping[str, tuple[str, ...]],
+    scopes: Mapping[str, tuple[Scope, ...]],
+) -> tuple[frozenset[str], frozenset[str]]:
+    """Names `region` declares to live elsewhere, and those of them declared
+    `global`, not counting the scopes nested in it.
+
+    The grammar says `global` and `nonlocal` both declare. Only `global` also
+    skips every enclosing function, which no role says.
+    """
+    declared: set[str] = set()
+    global_: set[str] = set()
+    todo = list(region)
+    while todo:
+        current = todo.pop()
+        if not isinstance(current, ast.AST):
+            continue
+        for fname in declaring.get(type(current).__name__, ()):
+            names = set(getattr(current, fname, ()))
+            declared |= names
+            if isinstance(current, ast.Global):
+                global_ |= names
+        nested = {f for layer in _scope_layers(current, scopes) for f in layer.inside}
+        for fname in current._fields:
+            if fname not in nested:
+                value = getattr(current, fname, None)
+                todo.extend(value if isinstance(value, list) else [value])
+    return frozenset(declared), frozenset(global_)
 
 
 def _as_node_list(value: object) -> list:

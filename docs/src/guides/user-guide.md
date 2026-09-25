@@ -103,6 +103,8 @@ The last point is the reason to use this over `ast.NodeTransformer`: a transform
 ```python
 scope_tree(tree, grammar, scopes, namespace, *, extra=…, mangle=…) -> Block
 binds_in_scope(node, grammar, ns, scopes, *, stop=()) -> set[str]
+layer_binds(node, grammar, ns, scopes) -> list[tuple[Scope, set[str]]]
+evaluated_outside(node, layer) -> list[tuple[parent, field, child]]
 names_bound_by(node, grammar, ns) -> set[str]
 bound_names(value, sort=None) -> Iterator[str]
 ```
@@ -111,7 +113,7 @@ Three functions answer the question at three sizes: `scope_tree` for a whole mod
 
 `scope_tree` returns a `Block` with `kind`, `name`, `bound`, `declared_elsewhere`, `children`, and `owns()`, which is `bound` minus `declared_elsewhere`. **Use `owns()`, not `bound`**: a block containing `global x` has `x` in `bound` and does not bind it.
 
-It models Python's real rules, including `global`/`nonlocal` redirection, PEP 695 type-parameter scopes, PEP 709 comprehension inlining, and, from 3.14, PEP 649 annotation blocks (pass `siblings=astero.python.annotation_blocks(tree)`). Class-body private name mangling, where `__x` inside `class C` becomes `_C__x`, is opt-in: pass `mangle=astero.python.mangle`.
+It models Python's real rules, including `global`/`nonlocal` redirection, PEP 695 type-parameter scopes, PEP 709 comprehension inlining, and, from 3.14, PEP 649 annotation blocks (pass `siblings=astero.python.annotation_blocks(tree)`). A scope can also split a field: a function's defaults and annotations, and a comprehension's first iterable, sit in a field that is inside and are evaluated in the scope around it. A `Scope` says so with `outside`, dotted paths from the node such as `"args.defaults"` or `"generators.0.iter"`; `evaluated_outside` finds those nodes, and `layer_binds` gives each layer a node opens the names bound in it. Class-body private name mangling, where `__x` inside `class C` becomes `_C__x`, is opt-in: pass `mangle=astero.python.mangle`.
 
 `names_bound_by` answers for a node's own fields, so a `With` reports nothing: the binding lives on the `withitem`, as an import's lives on the `alias` and an `except`'s on the `ExceptHandler`.
 
